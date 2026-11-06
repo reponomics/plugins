@@ -38,7 +38,8 @@ Require an object of type `tag`, a signed header with `type commit` and the exac
 Record the tag object and commit separately, then use the verified source:
 
 ```sh
-git rev-parse "refs/tags/$tag"
+tag_object="$(git rev-parse "refs/tags/$tag")"
+printf '%s\n' "$tag_object"
 commit="$(git rev-parse "refs/tags/$tag^{commit}")"
 git switch --detach "$commit"
 ```
@@ -47,13 +48,13 @@ Check {{VERSION_PATH}} and {{SIGNED_NOTES_PATH}} for the intended version and ch
 
 ## Verify the immutable release
 
-Keep the `repo`, `tag` and `commit` values above:
+Keep the `repo`, `tag`, `tag_object` and `commit` values above:
 
 ```sh
 gh release verify "$tag" --repo "$repo" --format json
 ```
 
-Require the verified release record to identify the same source commit. [Release verification](https://cli.github.com/manual/gh_release_verify) checks GitHub's attestation and works for source releases without attachments.
+In `verificationResult.statement.subject`, require the release's Git subject to identify the expected repository and tag, with `digest.sha1` equal to `$tag_object`. For these signed annotated tags, that digest identifies the tag object, not `$commit`; the verified tag binds the release to the source commit you checked out. [Release verification](https://cli.github.com/manual/gh_release_verify) checks GitHub's attestation and works for source releases without attachments.
 
 ## Optional dependency scan files
 

@@ -10,7 +10,7 @@ Use this reference for public GitHub source releases. The version, notes and tag
 4. Verify the draft's source, notes, filenames and bytes. Confirm immutable releases are enabled on the actual repository before publishing; YAML or a draft alone does not establish that setting.
 5. Publish when authorized, then run the consumer's verification commands and record what they establish.
 
-Immutable publication locks the assets and tag. GitHub's release attestation binds its recorded tag, commit and asset digests; it is distinct from the maintainer's Git signature and from build provenance. GitHub allows changes to display notes and titles after publication, so retain reviewed notes in the signed source when historical accuracy matters. Enabling immutability does not protect older releases retroactively.
+Immutable publication locks the assets and tag. GitHub's release attestation binds the repository and tag identity, the recorded Git object digest, and asset digests. For signed annotated tags, compare that Git digest with the verified tag object; the signed tag then binds the source commit. The release attestation is distinct from the maintainer's Git signature and from build provenance. GitHub allows changes to display notes and titles after publication, so retain reviewed notes in the signed source when historical accuracy matters. Enabling immutability does not protect older releases retroactively.
 
 ## One primary built artifact
 
