@@ -10,7 +10,7 @@ Verify the signed annotated tag, exact signed name and expected commit. Warn tha
 
 ## Immutable release membership
 
-Use GitHub's current `gh release verify` command for the release record and `gh release verify-asset` for each downloaded attached file. Compare the recorded commit with the verified source tag. Do not claim that checking the release alone checks a local file, or that GitHub's automatically generated source archives are covered as uploaded assets. A release membership check is not build provenance.
+Use GitHub's current `gh release verify` command for the release record and `gh release verify-asset` for each downloaded attached file. Check the verified Git subject's repository and tag identity, and compare its digest with the verified tag object ID. For a signed annotated tag, this is the tag object's digest, not the peeled commit ID; the verified tag binds that object to the intended source commit. Do not claim that checking the release alone checks a local file, or that GitHub's automatically generated source archives are covered as uploaded assets. A release membership check is not build provenance.
 
 ## Optional built artifact
 
