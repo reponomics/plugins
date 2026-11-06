@@ -48,7 +48,17 @@ Each plugin's README explains what to ask for once it is installed. Badge Buddy 
 
 <!-- treestamp:start -->
 <!-- treestamp:config
-hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "LICENSE", "Makefile", "SECURITY.md", "THIRD_PARTY_NOTICES.md", "package-lock.json", "package.json", "plugins/badge-buddy/.claude-plugin", "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets", "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin", "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts", "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt"]
+hidden = [
+    ".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml",
+    ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md", "LICENSE", "Makefile", "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md", "VERIFYING.md", "package-lock.json",
+    "package.json", "plugins/badge-buddy/.claude-plugin",
+    "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets",
+    "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin",
+    "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts",
+    "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt",
+]
 -->
 ```sh
 ./
@@ -77,8 +87,7 @@ hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".pretti
 │   └── workflow-guard/
 ├── tests/
 ├── tools/
-├── README.md
-└── VERIFYING.md
+└── README.md
 ```
 
 Maintained with [treestamp](https://github.com/reponomics/treestamp)
