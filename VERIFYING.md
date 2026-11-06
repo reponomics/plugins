@@ -4,6 +4,8 @@ The downloadable plugin is source in Git. For releases made with the signed-tag 
 
 ## Get the expected signer independently
 
+For releases beginning with `0.3.0-beta.1`, the authorized maintainer is [hesreallyhim](https://github.com/hesreallyhim). The release-signing public key is listed in [that account's SSH signing keys](https://api.github.com/users/hesreallyhim/ssh_signing_keys) with the SHA256 fingerprint `SHA256:IVsf0Jed2MXKHQkW/FcYtahE6OiovA5+50GxsrZPs9E`. Authenticate the maintainer's account through a channel you already trust; this page alone does not establish trust in the key. A replacement key requires an authenticated maintainer announcement.
+
 Obtain the release signing **public key** and its expected **SHA256 fingerprint** from the maintainer. Confirm the complete fingerprint through a channel you already trust independently of this release, such as direct contact with a known maintainer or a previously authenticated project announcement. Confirm that the key was authorized for this plugin and version. A key found inside the candidate tag, a comment on a key, or a “Verified” badge alone does not establish that authority.
 
 Save the public key as `release-signing.pub` outside the source checkout. Compare the fingerprint in the following output with the independently obtained value, character for character:
