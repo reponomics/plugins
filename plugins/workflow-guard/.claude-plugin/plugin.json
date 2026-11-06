@@ -1,0 +1,18 @@
+{
+  "name": "workflow-guard",
+  "version": "0.3.0-beta.1",
+  "description": "Stops Claude from adding unpinned actions or broad token permissions to GitHub Actions workflows",
+  "author": { "name": "Reponomics", "url": "https://github.com/reponomics" },
+  "homepage": "https://github.com/reponomics/plugins",
+  "repository": "https://github.com/reponomics/plugins",
+  "license": "MIT",
+  "userConfig": {
+    "mode": {
+      "type": "string",
+      "title": "Mode",
+      "description": "block refuses the edit and tells Claude why; warn lets it through and adds the findings to the result Claude reads.",
+      "default": "block",
+      "options": ["block", "warn"]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+name: Suggestion
+description: Propose a useful improvement
+body:
+  - type: markdown
+    attributes:
+      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions]({{SECURITY_POLICY_URL}})."
+  - type: textarea
+    id: need
+    attributes:
+      label: What benefit would this bring?
+      description: Describe the task or difficulty that motivates your suggestion and who it would help.
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Ideas and alternatives
+      description: Share a possible solution or anything you have already tried, if you wish. You can submit a suggestion without designing the solution.

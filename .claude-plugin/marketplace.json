@@ -1,0 +1,30 @@
+{
+  "name": "reponomics",
+  "description": "Plugins to help open source projects grow and maintain",
+  "owner": {
+    "name": "Reponomics",
+    "url": "https://reponomics.org"
+  },
+  "plugins": [
+    {
+      "name": "badge-buddy",
+      "source": "./plugins/badge-buddy"
+    },
+    {
+      "name": "starter-buddy",
+      "source": "./plugins/starter-buddy"
+    },
+    {
+      "name": "release-buddy",
+      "source": "./plugins/release-buddy"
+    },
+    {
+      "name": "badge-progress",
+      "source": "./plugins/badge-progress"
+    },
+    {
+      "name": "workflow-guard",
+      "source": "./plugins/workflow-guard"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Badge Buddy assessment</title>
+    <style>{{REVIEW_CSS}}</style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to review content</a>
+    <header class="masthead">
+      <div>
+        <p class="tool-name">reponomics. <span class="tool-separator" aria-hidden="true">|</span> Badge Buddy</p>
+        <p class="program-name">(Unofficial) OpenSSF Best Practices assessment</p>
+      </div>
+      <div class="project-context">
+        <span id="project-id"></span>
+        <span class="context-divider" aria-hidden="true"></span>
+        <span id="section-name"></span>
+      </div>
+      <div class="header-actions">
+        <a id="back-overview" class="back-button" href="#" hidden><span aria-hidden="true">←</span> Overview</a>
+        <nav class="bucket-links" aria-label="Assessment views">
+          <a href="#view=needs_input" aria-label="Not yet answered">?</a>
+          <a href="#view=na">N/A</a>
+          <a href="#view=unmet">Unmet</a>
+          <a href="#view=met">Met</a>
+          <a href="#view=all">All</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section id="overview-view" class="overview">
+        <header class="overview-heading">
+          <div>
+            <p class="utility-label">Assessment overview</p>
+            <h1 id="overview-title" tabindex="-1">Your assessment</h1>
+            <p class="lede">
+              Choose a category or read All criteria. Discuss changes with Claude using the criterion identifier. This preview refreshes automatically.
+            </p>
+          </div>
+          <p class="assessment-progress"><span id="answered-count">0</span> of <span id="total-count">0</span> criteria answered</p>
+        </header>
+
+        <div id="bucket-grid" class="bucket-grid" aria-label="Assessment views"></div>
+      </section>
+
+      <section id="list-view" class="list-view" aria-labelledby="list-title" hidden>
+        <aside class="toc-rail">
+          <nav aria-labelledby="toc-heading">
+            <h2 id="toc-heading">Find a criterion</h2>
+            <ol id="toc-list" class="toc-list"></ol>
+          </nav>
+        </aside>
+        <div class="reading-column">
+          <header class="list-heading">
+            <h1 id="list-title" tabindex="-1"></h1>
+            <p id="list-description" class="lede"></p>
+          </header>
+          <p id="empty-list" hidden></p>
+          <div id="criterion-list" class="criterion-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <a id="back-top" class="back-top" href="#top" aria-label="Back to top"><span aria-hidden="true">↑</span> Top</a>
+
+    <template id="criterion-template">
+      <article class="criterion-workspace" tabindex="-1" data-labelled-by="criterion-title">
+        <header class="criterion-header">
+          <p data-field="criterion-key" class="criterion-key"></p>
+          <h2 data-field="criterion-title"></h2>
+        </header>
+        <section class="official-text" data-labelled-by="official-text-heading">
+          <h3 data-field="official-text-heading">Official criterion</h3>
+          <p data-field="criterion-details"></p>
+        </section>
+        <section class="current-answer" data-labelled-by="current-answer-heading">
+          <h3 data-field="current-answer-heading">Current answer</h3>
+          <p><span data-field="current-status" class="answer-status"></span></p>
+          <h4 class="justification-label">Justification</h4>
+          <p data-field="current-justification" class="current-justification"></p>
+        </section>
+        <section class="criterion-evidence" data-labelled-by="evidence-heading">
+          <p class="utility-label">Evidence</p>
+          <h3 data-field="evidence-heading">Basis for this answer</h3>
+          <section>
+            <h4>Program requirements</h4>
+            <ul data-field="requirement-list" class="plain-list"></ul>
+          </section>
+          <section>
+            <h4>Recorded evidence</h4>
+            <div data-field="evidence-links" class="evidence-links"></div>
+          </section>
+          <section>
+            <h4>Conversation reference</h4>
+            <p data-field="conversation-reference" class="session-notes"></p>
+          </section>
+        </section>
+      </article>
+    </template>
+
+    <script id="assessment-data" type="application/json">{{ASSESSMENT_JSON}}</script>
+    <script>{{REVIEW_SCRIPT}}</script>
+  </body>
+</html>

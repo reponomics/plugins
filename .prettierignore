@@ -1,0 +1,27 @@
+# Local-only files and generated tooling state.
+INTERNAL/
+.cache/
+**/venv/
+**/.venv/
+node_modules/
+package-lock.json
+
+# Verbatim licenses and notices, including those embedded in Markdown files.
+**/LICENSE*
+**/COPYING*
+**/NOTICE*
+**/THIRD_PARTY_NOTICES*
+**/CODE_OF_CONDUCT.md
+
+# Upstream snapshots, recorded checksums, and third-party reference material.
+plugins/badge-buddy/assets/criteria/
+plugins/badge-buddy/assets/examples/badgeapp/
+plugins/badge-buddy/skills/ossf-scorecard/references/
+**/vendor/
+**/third_party/
+**/third-party/
+
+# Fixtures and artwork are maintained by their own authoring/generation tools.
+tests/**/fixtures/
+docs/assets/
+**/*.svg

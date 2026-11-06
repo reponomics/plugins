@@ -1,0 +1,55 @@
+[
+  {
+    "id": "compatibility",
+    "fixture": "# Widget CLI\n\nCurrent version: 1.4.2. The documented --format=json option is part of the supported public interface and is used by consumers. A proposed commit removes it and is labeled fix: simplify output.\n",
+    "prompt": "Our CLI is at 1.4.2. We are removing the documented --format=json flag that users depend on, but the commit says fix: simplify output. Is this a patch release? Give a brief recommendation; no setup or changes are requested.",
+    "diagnostic_max_words": 120
+  },
+  {
+    "id": "python-choice",
+    "fixture": "# Pebble\n\nSmall Python library. Two releases a year. setuptools-scm supplies the version from Git tags. Curated CHANGELOG.md works well. Existing CI publishes tagged releases.\n",
+    "prompt": "Which versioning workflow fits this project? We release our small Python library twice a year, use setuptools-scm to derive versions from Git tags, and already have a useful curated changelog and working CI publishing on tags. We want less maintenance, not more automation for its own sake. Give a concise recommendation; do not edit files.",
+    "diagnostic_max_words": 120
+  },
+  {
+    "id": "combined-plan",
+    "fixture": "# Source-only GitHub plugin\n\nNew GitHub repository containing one Claude Code plugin at version 0.1.0 in .claude-plugin/plugin.json. No published releases. The maintainer already chose manual manifest version selection and reviewed Markdown release notes. A maintained SSH release-signing key and independently verified public fingerprint already exist. Consumers install through a Git-backed plugin marketplace; its update and caching rules must be checked for the actual host. There is no package registry, build step or binary download. Optional maintainer dependency scanning can be considered; no runtime dependency inventory or vulnerability-free claim exists.\n",
+    "prompt": "Help plan a complete release process for this source-only GitHub plugin. We already chose manifest-selected versions, reviewed release notes, and our existing maintained SSH signing key. We want stable immutable GitHub releases and clear consumer verification. There are no registry packages or built artifacts. Explain a concise release sequence and the maintenance commitments; mention whether scoped OSV scanning would help without making it mandatory. Do not edit files, create keys, change settings, push tags, or publish. Retain our decisions and identify any unresolved prerequisite.",
+    "diagnostic_max_words": 250
+  },
+  {
+    "id": "monorepo",
+    "fixture": "# Mixed monorepo\n\nCore SDK and adapters are one product upgraded together by consumers. Two unrelated CLI tools have separate users and compatibility histories. Maintainers prefer a monthly release window. No release tool has been selected.\n",
+    "prompt": "Should everything in this monorepo share one version? Our core SDK and adapters are upgraded together, but two unrelated CLI tools have different users and compatibility histories. We prefer a monthly release window. No tool has been selected. Recommend a versioning strategy in at most 200 words; distinguish version relationships from release timing and what gets published. Do not choose a tool or change files.",
+    "diagnostic_max_words": 200
+  },
+  {
+    "id": "bot-pr",
+    "fixture": "# Release automation\n\nGitHub Actions creates release pull requests using GITHUB_TOKEN. Required PR checks validate those PRs. A release-tool README claims that bot-created PRs cannot run CI. The maintainer is deciding whether an App token is needed.\n",
+    "prompt": "Our release tool uses GITHUB_TOKEN to create release PRs, and its README says CI cannot run on them. Do we need a GitHub App token? Check current GitHub platform documentation and explain in at most 150 words, distinguishing PR checks from tag-triggered publication. Do not configure anything.",
+    "diagnostic_max_words": 150
+  },
+  {
+    "id": "config-no-write",
+    "fixture": "# Sample package\n\nSingle npm package rooted at the repository root, last published as 1.2.3. Conventional Commits reach main. The maintainer has chosen release-please manifest mode and wants reviewed release PRs. No prereleases. Publishing is already handled separately.\n",
+    "prompt": "Show the release-please manifest configuration for this single root npm package, last released as 1.2.3. We have chosen release-please, use Conventional Commits on main, and want reviewed release PRs with stable versions only. Provide the contents of release-please-config.json and .release-please-manifest.json, with a short explanation of what each controls. Check current tool documentation. Do not edit files or include a GitHub Actions workflow; publishing is already handled separately."
+  },
+  {
+    "id": "registry-boundary",
+    "fixture": "# npm publisher request\n\nAn npm package hosted on GitHub. The maintainer requests a new trusted publishing workflow with provenance. No registry configuration has been performed. This is a registry setup request, not a source-tag release request.\n",
+    "prompt": "Set up npm trusted publishing with provenance for this package. What should we do next? Use Release Buddy's supported setup guidance, and be clear about anything it does not maintain. Do not edit files, change npm settings, or publish.",
+    "diagnostic_max_words": 180
+  },
+  {
+    "id": "artifact-verification",
+    "fixture": "# Optional GitHub release archive\n\nA project has a working reviewed manifest version, maintained SSH-signed source tags, and immutable GitHub Releases. A GitHub Actions workflow builds one primary Linux CLI archive from the tagged commit and attaches it to a draft before publication. Consumers need to verify the downloaded archive against this repository and intended workflow. Existing versioning should stay intact; no package registry is used.\n",
+    "prompt": "Keep our existing versioning and signed source releases. Sketch optional provenance and consumer verification for the primary Linux CLI archive attached to our GitHub Release, including a successful verification and negative tests for tampered bytes and an unapproved identity or ref. State which artifact and identity are checked, and keep source-tag verification distinct. Do not supply unverified command syntax, edit files, run a build, or publish.",
+    "diagnostic_max_words": 250
+  },
+  {
+    "id": "source-update",
+    "fixture": "# Same version, different source\n\nA Git-sourced plugin's manifest says 0.1.0. Its immutable GitHub release points to a signed plugin--v0.1.0 tag at commit A. An installed copy also reports 0.1.0 but its files differ from that release tree. The origin and revision of the installed files are unknown: a marketplace install, local development override, stale cache or local edits have not been established. The marketplace host's update and version rules have not been inspected. There are no built release artifacts.\n",
+    "prompt": "An installed copy of our plugin reports version 0.1.0, but its skill files differ from the signed immutable 0.1.0 release at commit A. We do not yet know where those installed files came from or which host update and caching rules applied. Does this mean the immutable release changed or that we need build provenance? Explain what to inspect and what consumer verification can establish. Do not assume an ordinary marketplace update installs changed bytes without a version bump, and do not change anything.",
+    "diagnostic_max_words": 200
+  }
+]

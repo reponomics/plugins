@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "repository": {
+    "repository": "https://github.com/ossf/best-practices-badge",
+    "commit": "6452a0c299ef6358e6ef89fbdd0c24fb7da3b7a9"
+  },
+  "website": {
+    "base_url": "https://www.bestpractices.dev",
+    "project_id": 1,
+    "downloaded_at": "2026-09-12T08:14:03+00:00"
+  },
+  "pages": {
+    "passing": {
+      "url": "https://www.bestpractices.dev/en/projects/1/passing",
+      "sha256": "752110e472ec6af8e2431aaff645ee7f7ab2504d0edc9e04cd52ddb3785b1d8c"
+    },
+    "silver": {
+      "url": "https://www.bestpractices.dev/en/projects/1/silver",
+      "sha256": "f1604dc1a15e068a888516a1c458e7d178118cad69eefdf5690e4fe34e53b733"
+    },
+    "gold": {
+      "url": "https://www.bestpractices.dev/en/projects/1/gold",
+      "sha256": "4873b3a6695c0e230f1be3f3a28a206f4d384bf79a4e13e023e3bef909bb5b31"
+    },
+    "baseline-1": {
+      "url": "https://www.bestpractices.dev/en/projects/1/baseline-1",
+      "sha256": "a18332244e3fe806070d5f036f4253009a6541d441c9d23ea6c83115e7a4416a"
+    },
+    "baseline-2": {
+      "url": "https://www.bestpractices.dev/en/projects/1/baseline-2",
+      "sha256": "6635dec79f2130afa104d7468916f5804984655482c23c1ac04b2085bd6c5f43"
+    },
+    "baseline-3": {
+      "url": "https://www.bestpractices.dev/en/projects/1/baseline-3",
+      "sha256": "5edf348a745de378e50b20dfe8dc38534e9e17cb00bfe6d23c04affc0255ad55"
+    }
+  },
+  "website_semantic_sha256": "cc5e43a5afcce208447dd61eca7e17783e17532cb71a02f8fda5664b88ca5c67",
+  "checked_fields": [
+    "ids_and_order",
+    "display_id",
+    "description",
+    "description_links",
+    "details",
+    "details_links",
+    "na_allowed",
+    "met_url_required",
+    "future",
+    "obsolete"
+  ],
+  "repository_only_fields": [
+    "category",
+    "met_justification_required",
+    "na_justification_required"
+  ],
+  "catalog_sha256": "c493338ac676f4d46856f409342987bfcec6c7c960cdff780837b45b666932a9"
+}

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head><title>Example project</title></head>
+<body>
+<h1>Example project</h1>
+<p class="project-description">Project-specific introduction.</p>
+<div id="alpha" class="row criterion-data criterion-passing" data-status="Met" data-justification="Project-specific response">
+  <div class="criteria-radio">
+    <div class="status-chooser"><div class="form-group">
+      <a href="#alpha"><div class="block-left"><br><img src="check.png" alt="Passing"></a></div>
+      <div><fieldset><legend>Criterion [alpha]</legend>
+        <input disabled type="radio" name="project[alpha_status]" value="Met" checked>
+        <input disabled type="radio" name="project[alpha_status]" value="Unmet">
+        <input disabled type="radio" name="project[alpha_status]" value="N/A">
+        <input disabled type="radio" name="project[alpha_status]" value="?">
+      </fieldset></div>
+    </div></div>
+  </div>
+  <div class="criteria-desc"><br>
+    The project MUST publish a <strong>security</strong> policy at <a href="/en/help">this address</a>. (URL required)
+    <sup>[alpha]</sup>
+    <button>Details</button>
+    <div class="details-text" id="alpha_details_text"><p>Use <em>public</em> documentation.</p><p>See <a href="https://example.org/guide">the guide</a>.</p></div>
+  </div>
+  <div class="justification-markdown"><p>Our response has a <a href="https://example.org/project-answer">project URL</a>.</p></div>
+  <p class="bg-warning">A project-specific warning.</p>
+</div>
+<div id="require_2FA" class="row criterion-data" data-status="?" data-justification="">
+  <div class="criteria-radio"><fieldset>
+    <input disabled type="radio" name="project[require_2FA_status]" value="Met">
+    <input disabled type="radio" name="project[require_2FA_status]" value="Unmet">
+    <input disabled type="radio" name="project[require_2FA_status]" value="?" checked>
+  </fieldset></div>
+  <div class="criteria-desc"><br>(Future criterion) Require multi-factor authentication.<sup>[require_2FA]</sup></div>
+</div>
+<div id="osps_ac_01_01" class="row criterion-data" data-status="Unmet" data-justification="">
+  <div class="criteria-radio"><fieldset>
+    <input disabled type="radio" name="project[osps_ac_01_01_status]" value="Met">
+    <input disabled type="radio" name="project[osps_ac_01_01_status]" value="Unmet" checked>
+    <input disabled type="radio" name="project[osps_ac_01_01_status]" value="N/A">
+    <input disabled type="radio" name="project[osps_ac_01_01_status]" value="?">
+  </fieldset></div>
+  <div class="criteria-desc"><br>(Obsolete criterion) Preserve a historical control.<sup>[OSPS-AC-01.01]</sup></div>
+</div>
+</body>
+</html>

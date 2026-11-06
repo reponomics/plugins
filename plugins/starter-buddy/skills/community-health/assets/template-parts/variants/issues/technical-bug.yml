@@ -1,0 +1,35 @@
+name: Technical bug report
+description: Share a reproduction and the setup where it occurs
+body:
+  - type: markdown
+    attributes:
+      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions]({{SECURITY_POLICY_URL}}). Check examples and output for credentials or private data before submitting."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened, and what did you expect?
+      description: Describe the failure and the result you were trying to obtain.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide a small input, configuration, or sequence of actions we can try. For an intermittent failure, describe the circumstances and observations you have so far.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Versions and environment
+      description: List the project release or commit, operating system, and relevant browser or runtime versions, where known.
+  - type: textarea
+    id: extensions
+    attributes:
+      label: Additional components
+      description: Note any plugins, extensions, or services used with the project. If you have tried a simpler setup, tell us whether that changed the result.
+  - type: textarea
+    id: context
+    attributes:
+      label: Supporting evidence
+      description: Attach screenshots, error messages, or logs that illustrate the failure. Exclude credentials and private data.

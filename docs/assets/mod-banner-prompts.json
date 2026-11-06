@@ -1,0 +1,27 @@
+{
+  "tool": "Built-in image_gen",
+  "date": "2026-11-04",
+  "export": "Resize artwork proportionally to 840 px wide, center-crop to 840x240, embed in SVG, add editable title and tagline and shared skyline wordmark, then render with make render-assets.",
+  "variants": [
+    {
+      "plugin": "workflow-guard",
+      "theme": "light",
+      "prompt": "Create a single borderless Common Thread README banner background, very wide 3.5:1 landscape composition intended for 840x240. Reference images show the established material, palette, lighting and layout. Generate ARTWORK ONLY: absolutely no text, lettering, numbers, logos or watermark, since these will be added as editable typography. Reserve the entire left 58% as uncluttered negative space for a large heading and tagline. Place the complete softly dimensional illustration in the right third (x roughly 530–790 of 840), with generous margins top and bottom. Fine flowing blue cord/thread runs low across the composition to connect to the illustration, never through the heading area. Subtle grid only behind right-side illustration. Soft studio shading and tactile matte materials, restrained editorial branding, match reference quality. LIGHT THEME: warm ivory paper background, petrol blue thread, sage and amber accent details. Subject: Workflow Guard — a sturdy rounded matte sage shield protecting a small three-node workflow, nodes linked by blue cord, one modest amber connector. No padlocks, words or checkmark text. Shield and workflow form one elegant compact still life; do not add a package or podium from the references."
+    },
+    {
+      "plugin": "workflow-guard",
+      "theme": "dark",
+      "prompt": "Make a DARK THEME variant of the supplied Workflow Guard background. Preserve the shield, three workflow nodes, blue cord, composition, proportions and tactile matte materials exactly. Deep petrol ink background matching the existing dark Badge Buddy reference; subtle right-side grid, softly lit sage shield, cream node tiles, small amber junction, sky-blue connecting thread. No text or logos anywhere. Left 58% remains clear for typography added separately. Wide README banner layout."
+    },
+    {
+      "plugin": "badge-progress",
+      "theme": "light",
+      "prompt": "Create a single borderless Common Thread README banner background, very wide 3.5:1 landscape composition intended for 840x240. Reference images show the established material, palette, lighting and layout. Generate ARTWORK ONLY: absolutely no text, lettering, numbers, logos or watermark, since these will be added as editable typography. Reserve the entire left 58% as uncluttered negative space for a large heading and tagline. Place the complete softly dimensional illustration in the right third (x roughly 530–790 of 840), with generous margins top and bottom. Fine flowing blue cord/thread runs low across the composition to connect to the illustration, never through the heading area. Subtle grid only behind right-side illustration. Soft studio shading and tactile matte materials, restrained editorial branding, match reference quality. LIGHT THEME: warm ivory paper, petrol blue thread, sage and amber accents. Subject: Badge Progress — one small freestanding rounded ivory dashboard slab, with three recessed horizontal tracks partly filled with tactile sage and blue bars of different lengths, and small round amber indicators. A blue thread connects naturally to its base. It is a charming physical progress-display object with soft grounding shadow, slightly angled for depth. No badge emblems, trophies, ticks, numbers, letters or text. Right side object only; open left area."
+    },
+    {
+      "plugin": "badge-progress",
+      "theme": "dark",
+      "prompt": "Make a DARK THEME variant of the supplied Badge Progress background. Preserve the exact dashboard slab, three partly filled horizontal tracks, round amber indicators, small sage feet, blue cord, composition, proportions and tactile matte materials. Deep petrol ink background matching the supplied dark Workflow Guard image; subtle right-side grid, softly lit ivory display, sage and blue bars, amber details, sky-blue connecting thread. No text or logos anywhere. Left 58% remains clear for typography added separately. Wide README banner layout."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# Maintainer tooling only; installed plugins use the Python standard library.
+PyYAML==6.0.3
+beautifulsoup4==4.15.0
+html5lib==1.1
+pre-commit==4.7.0
+treestamp==0.5.0

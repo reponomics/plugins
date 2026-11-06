@@ -1,0 +1,9 @@
+target-version = "py311"
+force-exclude = true
+extend-exclude = [
+    "INTERNAL",
+    "**/fixtures/**",
+    "**/vendor/**",
+    "**/third_party/**",
+    "**/third-party/**",
+]

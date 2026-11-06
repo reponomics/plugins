@@ -1,0 +1,20 @@
+# Upstream paths for manual maintainer review; no tool monitors this inventory.
+# See docs/criteria-maintenance.md for the Git diff procedure.
+# A trailing slash includes the entire directory.
+config/locales/en.yml
+criteria/
+docs/automation-proposals.md
+docs/bestpractices-json.md
+docs/automation-approach.md
+docs/api.md
+docs/baseline_automation.md
+docs/best_practices.py
+docs/best_practices_modify.py
+docs/implementation.md
+docs/INSTALL.md
+docs/assurance-case.md
+docs/governance.md
+app/controllers/projects_controller.rb
+app/lib/repo_json_detective.rb
+app/lib/chief.rb
+test/controllers/projects_controller_test.rb

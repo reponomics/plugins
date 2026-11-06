@@ -1,0 +1,31 @@
+{
+  "name": "badge-buddy",
+  "version": "0.3.0-beta.1",
+  "description": "An unofficial guide and implementation assistant for OpenSSF Best Practices and Scorecard, with independent skills for GitHub workflow maintenance, meaningful test-coverage baselines, and static analysis",
+  "author": {
+    "name": "Reponomics",
+    "url": "https://github.com/reponomics"
+  },
+  "homepage": "https://github.com/reponomics/plugins",
+  "repository": "https://github.com/reponomics/plugins",
+  "license": "MIT",
+  "keywords": [
+    "openssf",
+    "best-practices",
+    "badge",
+    "osps",
+    "baseline",
+    "scorecard",
+    "supply-chain",
+    "security",
+    "ci-cd",
+    "github-actions",
+    "workflow-maintenance",
+    "coverage",
+    "static-analysis",
+    "codecov",
+    "codeql",
+    "bandit",
+    "snyk"
+  ]
+}

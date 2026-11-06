@@ -1,0 +1,64 @@
+name: Dependency scan
+
+on:
+  schedule:
+    - cron: "17 6 * * 2"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      commit:
+        description: Full validated commit SHA to scan
+        required: true
+        type: string
+    outputs:
+      artifact-id:
+        description: Immutable Actions artifact ID for this scan
+        value: ${{ jobs.scan.outputs.artifact-id }}
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      artifact-id: ${{ steps.evidence.outputs.artifact-id }}
+    env:
+      SCAN_COMMIT: ${{ inputs.commit || github.sha }}
+    steps:
+      - name: Require a full commit SHA
+        run: '[[ "$SCAN_COMMIT" =~ ^[0-9a-f]{40}$ ]]'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SCAN_COMMIT }}
+          persist-credentials: false
+      - name: Confirm the checkout
+        run: test "$(git rev-parse HEAD)" = "$SCAN_COMMIT"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Fetch the pinned OSV-Scanner binary
+        run: |
+          cd "$RUNNER_TEMP"
+          curl --fail --silent --show-error --location --retry 3 --proto '=https' --proto-redir '=https' \
+            https://github.com/google/osv-scanner/releases/download/v2.7.0/osv-scanner_linux_amd64 -o osv-scanner
+          echo '160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b  osv-scanner' | sha256sum --check
+          chmod 0755 osv-scanner
+      - name: Scan resolved maintainer dependencies
+        run: python tools/scan_dependencies.py --scanner "$RUNNER_TEMP/osv-scanner" --output "$RUNNER_TEMP/scan"
+      - name: Record the scan scope and outcome
+        if: ${{ !cancelled() }}
+        run: |
+          if test -f "$RUNNER_TEMP/scan/scan-scope.md"; then
+            cat "$RUNNER_TEMP/scan/scan-scope.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Preserve scan evidence for triage and release
+        id: evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dependency-scan-${{ env.SCAN_COMMIT }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/scan/
+          if-no-files-found: error
+          retention-days: 90

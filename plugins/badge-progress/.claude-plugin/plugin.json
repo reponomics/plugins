@@ -1,0 +1,10 @@
+{
+  "name": "badge-progress",
+  "version": "0.3.0-beta.1",
+  "description": "A pane and progress band for Badge Buddy's OpenSSF Best Practices applications",
+  "author": { "name": "Reponomics", "url": "https://github.com/reponomics" },
+  "homepage": "https://github.com/reponomics/plugins",
+  "repository": "https://github.com/reponomics/plugins",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

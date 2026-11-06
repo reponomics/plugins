@@ -1,0 +1,21 @@
+{
+  "name": "starter-buddy",
+  "version": "0.3.0-beta.1",
+  "description": "Quick community-file setup for GitHub repositories: a few practical decisions, useful defaults, and optional pull request delivery",
+  "author": {
+    "name": "Reponomics",
+    "url": "https://github.com/reponomics"
+  },
+  "homepage": "https://github.com/reponomics/plugins/",
+  "repository": "https://github.com/reponomics/plugins",
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "open source",
+    "community-health",
+    "onboarding",
+    "maintainers",
+    "issue-forms",
+    "security"
+  ]
+}

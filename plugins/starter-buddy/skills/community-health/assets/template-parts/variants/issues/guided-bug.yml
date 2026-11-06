@@ -1,0 +1,28 @@
+name: Bug report
+description: Explain the behavior you encountered
+body:
+  - type: markdown
+    attributes:
+      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions]({{SECURITY_POLICY_URL}})."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current and expected behavior
+      description: Tell us what the project does now and what you think it should do.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How can we see the problem?
+      description: If you know how to trigger it, share the steps, an example input, or a link to a reproduction.
+  - type: input
+    id: version
+    attributes:
+      label: Project version
+      description: Give the release or commit you used, if available.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or output
+      description: Add any evidence that would help us investigate. Check that it does not reveal credentials or private data.

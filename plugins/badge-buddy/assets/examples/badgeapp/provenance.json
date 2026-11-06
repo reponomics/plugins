@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "project_id": 1,
+  "project_name": "BadgeApp",
+  "source_url": "https://www.bestpractices.dev/projects/1.json",
+  "resolved_source_url": "https://www.bestpractices.dev/projects/1.json",
+  "entry_url": "https://www.bestpractices.dev/en/projects/1/passing",
+  "retrieved_at": "2026-09-09T21:12:05.704189+00:00",
+  "upstream_updated_at": "2026-07-18T04:02:54.845Z",
+  "sha256": "6930967211eba8b3d98bc1f02516f7a13d932ef556aac1921061beb566253b86",
+  "content_type": "application/json; charset=utf-8",
+  "license": "CDLA-Permissive-2.0",
+  "license_url": "https://cdla.dev/permissive-2-0/",
+  "license_text_source_url": "https://raw.githubusercontent.com/Community-Data-License-Agreements/Releases/main/CDLA-Permissive-2.0.txt",
+  "license_text_sha256": "4531a67d443284d93ffed0803df5b10634aff21c3d77e381f2d48af01d875868",
+  "attribution": "David A. Wheeler and the OpenSSF Best Practices badge contributors",
+  "modifications": "None; project.json preserves the downloaded response bytes.",
+  "criteria_catalog_commit": "5b4cb83667d893707c8e07d8fd438604a30ba23a"
+}

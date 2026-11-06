@@ -1,0 +1,7 @@
+# Copy into the project and pass explicitly: bandit -c bandit.yaml -r .
+# Only local dependency environments are excluded. Inspect actual scan targets.
+exclude_dirs:
+  - ./venv
+  - ./.venv
+# Retain tests and scripts: they may handle secrets, subprocesses, or fixtures.
+# Do not add blanket skips or an allowlist of tests merely to obtain a green run.
