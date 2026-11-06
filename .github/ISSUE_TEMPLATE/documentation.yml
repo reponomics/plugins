@@ -1,0 +1,25 @@
+name: Documentation correction
+description: Help us improve a README, guide, or other explanation
+body:
+  - type: markdown
+    attributes:
+      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions](https://github.com/reponomics/plugins/security/policy). To report inaccurate guidance from Claude while using a plugin, use the bug report form instead."
+  - type: input
+    id: location
+    attributes:
+      label: Where were you looking?
+      description: Give a page URL, file path, or section title. For a missing topic, say where you looked for it.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What prevented you from using the documentation?
+      description: Identify the inaccurate statement, missing explanation, broken link, or confusing passage.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: An idea for improving it
+      description: You can suggest wording, an example, or a reference here. Leave this blank if you only want to flag the problem.
