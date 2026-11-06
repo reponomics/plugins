@@ -1,10 +1,16 @@
 # Contributing
 
-Please help contribute to this project by filing Issues if you encounter any difficulties or have suggestions for concrete improvements. If you discover any technical problems, either in the functionality of the plugin, or the accuracy of the information provided by Claude while using it, please open a Bug Report and let us know.
+Please help contribute to this project by filing Issues if you encounter any difficulties or have suggestions for concrete improvements. If you discover any technical problems, either in the functionality of the plugin, or the accuracy of the information provided by Claude while using it, please open a [bug report](https://github.com/reponomics/plugins/issues/new?template=bug-report.yml) and let us know. [Suggestions](https://github.com/reponomics/plugins/issues/new?template=suggestion.yml) and [documentation corrections](https://github.com/reponomics/plugins/issues/new?template=documentation.yml) have their own forms.
 
 We strongly encourage contributions from users who host their projects outside of GitHub, so that we can provide more targeted support and platform-specific information for other source forges.
 
+Do not report security vulnerabilities in public issues or pull requests. Follow the private reporting instructions in [SECURITY.md](./SECURITY.md).
+
 All contributors must agree to follow the project's [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Pull requests
+
+Pull requests target `main` and are squash-merged, so the PR title becomes the commit message. The title must follow [Conventional Commits](https://www.conventionalcommits.org/), for example `fix(release-buddy): ...` or `docs: ...`; a required check enforces this. The `check` and `validate` workflows must also pass. For a larger change, consider opening an issue first to discuss the approach.
 
 ## Local development checks
 
