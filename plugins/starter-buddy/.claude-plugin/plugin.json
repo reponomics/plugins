@@ -1,10 +1,10 @@
 {
   "name": "starter-buddy",
-  "version": "0.3.0-beta.1",
-  "description": "Quick community-file setup for GitHub repositories: a few practical decisions, useful defaults, and optional pull request delivery",
+  "version": "0.3.0-beta.2",
+  "description": "Quick community-file setup for GitHub repositories, with practical defaults and useful templates that adjust to your needs",
   "author": {
     "name": "Reponomics",
-    "url": "https://github.com/reponomics"
+    "url": "https://reponomics.org"
   },
   "homepage": "https://github.com/reponomics/plugins/",
   "repository": "https://github.com/reponomics/plugins",
