@@ -1,5 +1,6 @@
 name: Documentation correction
 description: Help us improve a README, guide, or other explanation
+labels: ["documentation"]
 body:
   - type: markdown
     attributes:
