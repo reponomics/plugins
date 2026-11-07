@@ -1,0 +1,50 @@
+name: Bug report
+description: Report a plugin that misbehaves or gives inaccurate guidance
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions](https://github.com/reponomics/plugins/security/policy)."
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options:
+        - badge-buddy
+        - starter-buddy
+        - release-buddy
+        - badge-progress
+        - workflow-guard
+        - Marketplace or installation
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current and expected behavior
+      description: Describe what happened and what you expected instead. Inaccurate information from Claude while using a plugin counts as a bug; say which statement was wrong and, if you can, link the source that contradicts it.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How can we see the problem?
+      description: Share the request you gave Claude, the command or script that failed, or the steps that lead to the problem.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Shown by `claude plugin list`, or give a release tag or commit.
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`, if available.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output or transcript excerpt
+      description: Add any error output or relevant part of the conversation. Check that it does not reveal credentials, tokens, or private repository data.
+      render: text

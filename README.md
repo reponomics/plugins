@@ -15,7 +15,7 @@ Plugins to help open source projects grow and maintain: quickstart a repo with c
 | Plugin             | What it does                                                                                                                                                                                                                                                                                                               | Docs                                                       |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | **badge-buddy**    | Helps projects of any size achieve meaningful open source badges. An unofficial guide and implementation assistant for the OpenSSF Best Practices badges (Passing, Silver, Gold), the Security Baseline, and Scorecard. Set up useful coverage and analysis badges, improve testing, and maintain secure GitHub workflows. | [plugins/badge-buddy](plugins/badge-buddy/README.md)       |
-| **starter-buddy**  | Quickstart a GitHub repository with key community-files, issue templates,and other sensible defaults, to save you time setting up any project.                                                                                                                                                                             | [plugins/starter-buddy](plugins/starter-buddy/README.md)   |
+| **starter-buddy**  | Quickstart a GitHub repository with key community-files, issue templates, and other sensible defaults, to save you time setting up any project.                                                                                                                                                                            | [plugins/starter-buddy](plugins/starter-buddy/README.md)   |
 | **release-buddy**  | Versioning and changelog guidance, plus signed source tags and immutable GitHub releases with optional build provenance and scoped dependency evidence.                                                                                                                                                                    | [plugins/release-buddy](plugins/release-buddy/README.md)   |
 | **badge-progress** | A mod for Badge Buddy users: a pane with each badge section's answer counts, and a progress bar above the prompt while Claude records answers.                                                                                                                                                                             | [plugins/badge-progress](plugins/badge-progress/README.md) |
 | **workflow-guard** | A mod that stops Claude from adding unpinned actions or broad top-level token permissions to GitHub Actions workflows.                                                                                                                                                                                                     | [plugins/workflow-guard](plugins/workflow-guard/README.md) |
@@ -48,7 +48,17 @@ Each plugin's README explains what to ask for once it is installed. Badge Buddy 
 
 <!-- treestamp:start -->
 <!-- treestamp:config
-hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "LICENSE", "Makefile", "THIRD_PARTY_NOTICES.md", "package-lock.json", "package.json", "plugins/badge-buddy/.claude-plugin", "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets", "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin", "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts", "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt"]
+hidden = [
+    ".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml",
+    ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md", "LICENSE", "Makefile", "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md", "VERIFYING.md", "package-lock.json",
+    "package.json", "plugins/badge-buddy/.claude-plugin",
+    "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets",
+    "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin",
+    "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts",
+    "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt",
+]
 -->
 ```sh
 ./
@@ -77,8 +87,7 @@ hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".pretti
 │   └── workflow-guard/
 ├── tests/
 ├── tools/
-├── README.md
-└── VERIFYING.md
+└── README.md
 ```
 
 Maintained with [treestamp](https://github.com/reponomics/treestamp)
