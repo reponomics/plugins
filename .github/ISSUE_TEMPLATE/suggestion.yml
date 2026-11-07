@@ -1,13 +1,13 @@
 name: Suggestion
-description: Propose an improvement or support for another platform
+description: Propose an improvement, feature request, or additional support for another source forge
 title: "[FEAT]: "
 labels: ["enhancement"]
 body:
   - type: textarea
     id: need
     attributes:
-      label: What benefit would this bring?
-      description: Describe the task or difficulty that motivates your suggestion and who it would help. If you host projects outside GitHub, tell us which forge and what the plugins currently get wrong or leave out for it.
+      label: What enhancement or additional functionality would you like to see?
+      description: Describe the task or difficulty that motivates your suggestion and who it would help. If you host projects outside GitHub, tell us which forge and what the plugins currently get wrong or how they could be improved.
     validations:
       required: true
   - type: textarea

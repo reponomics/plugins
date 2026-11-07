@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a plugin that misbehaves or gives inaccurate guidance
+description: Report a problem you encountered with a plugin or with Claude's guidance
 title: "[BUG]: "
 labels: ["bug"]
 body:
@@ -17,9 +17,7 @@ body:
         - badge-progress
         - workflow-guard
         - Marketplace or installation
-        - Not sure
-    validations:
-      required: true
+        - Other
   - type: textarea
     id: problem
     attributes:
