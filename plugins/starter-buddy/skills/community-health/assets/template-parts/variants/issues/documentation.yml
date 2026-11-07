@@ -1,9 +1,8 @@
 name: Documentation correction
 description: Help us improve an explanation or resource
+title: "[DOCS]: "
+labels: ["documentation"]
 body:
-  - type: markdown
-    attributes:
-      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions]({{SECURITY_POLICY_URL}})."
   - type: input
     id: location
     attributes:

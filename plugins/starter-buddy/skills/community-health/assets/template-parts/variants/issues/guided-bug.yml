@@ -1,5 +1,7 @@
 name: Bug report
 description: Explain the behavior you encountered
+title: "[BUG]: "
+labels: ["bug"]
 body:
   - type: markdown
     attributes:

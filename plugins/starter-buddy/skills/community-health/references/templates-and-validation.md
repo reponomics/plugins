@@ -11,7 +11,7 @@ Use [template selection](template-selection.md) to select defaults from the requ
 | `contributing.md`                   | `CONTRIBUTING.md` or an existing recognized location | Contribution guidance is missing or too vague to act on.                         |
 | `support.md`                        | `SUPPORT.md` or an existing recognized location      | The project has a confirmed route for ordinary help; this file is optional.      |
 | `variants/issues/`                  | Selected files under `.github/ISSUE_TEMPLATE/`       | The selected files cover the requested issue categories.                         |
-| `.github/ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`                  | A shared chooser configuration with blank issues enabled.                        |
+| `.github/ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`                  | A shared chooser configuration with blank issues enabled and a security link.    |
 | `variants/pull-requests/`           | One `.github/pull_request_template.md`               | The user wants a PR template and the project accepts pull requests.              |
 | `variants/security/`                | One `SECURITY.md`                                    | The maintainer confirms the support scope and monitored private reporting route. |
 
@@ -33,16 +33,17 @@ Reflect established contribution requirements, such as sign-off or changelog ent
 
 ## Issue-form baseline
 
-Keep forms brief and actionable. The bundled forms start without labels, types, projects, or assignees. Add routing details when useful and supported by the project.
+Keep forms brief and actionable. The bundled forms set a title prefix (`[BUG]: `, `[FEAT]: `, `[DOCS]: `) and one of GitHub's default labels (`bug`, `enhancement`, `documentation`). Check that each label exists in the target repository; if it does not, remove the `labels` entry or create the label with the maintainer's agreement. Adjust or drop the prefixes to suit the project. The forms set no issue types, projects, or assignees; add those when useful and supported by the project.
 
 For every YAML issue form:
 
 - keep top-level `name`, `description`, and `body`;
 - use unique, kebab-case input `id` values;
 - collect the problem and reproduction information actually needed;
-- explain that vulnerability details belong in the repository's confidential security route;
 - avoid required fields that a reporter may not know; and
 - keep the file on the default branch under `.github/ISSUE_TEMPLATE/`.
+
+Bug-report forms and the general report template tell reporters not to publish vulnerability details and link the confidential route. Other forms omit that notice; the chooser's security contact link covers them.
 
 Keep blank issues enabled by default. Explain that disabling them makes templates or contact links the available entry points, and follow the maintainer’s preference. Use confirmed public URLs for `contact_links`.
 

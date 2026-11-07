@@ -1,5 +1,7 @@
 name: Technical bug report
 description: Share a reproduction and the setup where it occurs
+title: "[BUG]: "
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
