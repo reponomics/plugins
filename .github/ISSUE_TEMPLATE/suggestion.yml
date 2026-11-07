@@ -1,5 +1,6 @@
 name: Suggestion
 description: Propose an improvement or support for another platform
+title: "[FEAT]: "
 labels: ["enhancement"]
 body:
   - type: textarea
