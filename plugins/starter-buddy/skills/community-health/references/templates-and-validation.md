@@ -11,7 +11,7 @@ Use [template selection](template-selection.md) to select defaults from the requ
 | `contributing.md`                   | `CONTRIBUTING.md` or an existing recognized location | Contribution guidance is missing or too vague to act on.                         |
 | `support.md`                        | `SUPPORT.md` or an existing recognized location      | The project has a confirmed route for ordinary help; this file is optional.      |
 | `variants/issues/`                  | Selected files under `.github/ISSUE_TEMPLATE/`       | The selected files cover the requested issue categories.                         |
-| `.github/ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`                  | A shared chooser configuration with blank issues enabled and a security link.    |
+| `.github/ISSUE_TEMPLATE/config.yml` | `.github/ISSUE_TEMPLATE/config.yml`                  | A shared chooser configuration with blank issues enabled.                        |
 | `variants/pull-requests/`           | One `.github/pull_request_template.md`               | The user wants a PR template and the project accepts pull requests.              |
 | `variants/security/`                | One `SECURITY.md`                                    | The maintainer confirms the support scope and monitored private reporting route. |
 
@@ -43,7 +43,7 @@ For every YAML issue form:
 - avoid required fields that a reporter may not know; and
 - keep the file on the default branch under `.github/ISSUE_TEMPLATE/`.
 
-Bug-report forms and the general report template tell reporters not to publish vulnerability details and link the confidential route. Other forms omit that notice; the chooser's security contact link covers them.
+Bug-report forms and the general report template tell reporters not to publish vulnerability details and link the confidential route. Other forms omit that notice. When the repository has a security policy, GitHub's issue chooser links to it automatically, so `contact_links` does not need a security entry.
 
 Keep blank issues enabled by default. Explain that disabling them makes templates or contact links the available entry points, and follow the maintainer’s preference. Use confirmed public URLs for `contact_links`.
 
