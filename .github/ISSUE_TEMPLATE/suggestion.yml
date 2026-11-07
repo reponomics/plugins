@@ -1,9 +1,6 @@
 name: Suggestion
 description: Propose an improvement or support for another platform
 body:
-  - type: markdown
-    attributes:
-      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions](https://github.com/reponomics/plugins/security/policy)."
   - type: textarea
     id: need
     attributes:

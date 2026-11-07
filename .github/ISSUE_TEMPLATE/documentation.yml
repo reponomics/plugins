@@ -3,7 +3,7 @@ description: Help us improve a README, guide, or other explanation
 body:
   - type: markdown
     attributes:
-      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions](https://github.com/reponomics/plugins/security/policy). To report inaccurate guidance from Claude while using a plugin, use the bug report form instead."
+      value: "To report inaccurate guidance from Claude while using a plugin, use the bug report form instead."
   - type: input
     id: location
     attributes:
