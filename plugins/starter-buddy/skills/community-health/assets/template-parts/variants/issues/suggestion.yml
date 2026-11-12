@@ -1,9 +1,8 @@
 name: Suggestion
 description: Propose a useful improvement
+title: "[FEAT]: "
+labels: ["enhancement"]
 body:
-  - type: markdown
-    attributes:
-      value: "Do not publish vulnerability details in this issue. Use [the private reporting instructions]({{SECURITY_POLICY_URL}})."
   - type: textarea
     id: need
     attributes:

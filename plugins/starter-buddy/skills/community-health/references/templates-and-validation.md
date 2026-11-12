@@ -33,16 +33,17 @@ Reflect established contribution requirements, such as sign-off or changelog ent
 
 ## Issue-form baseline
 
-Keep forms brief and actionable. The bundled forms start without labels, types, projects, or assignees. Add routing details when useful and supported by the project.
+Keep forms brief and actionable. The bundled forms set a title prefix (`[BUG]: `, `[FEAT]: `, `[DOCS]: `) and one of GitHub's default labels (`bug`, `enhancement`, `documentation`). Check that each label exists in the target repository; if it does not, remove the `labels` entry or create the label with the maintainer's agreement. Adjust or drop the prefixes to suit the project. The forms set no issue types, projects, or assignees; add those when useful and supported by the project.
 
 For every YAML issue form:
 
 - keep top-level `name`, `description`, and `body`;
 - use unique, kebab-case input `id` values;
 - collect the problem and reproduction information actually needed;
-- explain that vulnerability details belong in the repository's confidential security route;
 - avoid required fields that a reporter may not know; and
 - keep the file on the default branch under `.github/ISSUE_TEMPLATE/`.
+
+Bug-report forms and the general report template tell reporters not to publish vulnerability details and link the confidential route. Other forms omit that notice. When the repository has a security policy, GitHub's issue chooser links to it automatically, so `contact_links` does not need a security entry.
 
 Keep blank issues enabled by default. Explain that disabling them makes templates or contact links the available entry points, and follow the maintainer’s preference. Use confirmed public URLs for `contact_links`.
 

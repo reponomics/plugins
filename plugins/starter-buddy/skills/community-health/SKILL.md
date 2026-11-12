@@ -42,7 +42,7 @@ Use `references/template-selection.md` for bundled options and `references/templ
 
 - **README:** Start with the project purpose and verified getting-started information. Expand or curate it according to the user's interest.
 - **CONTRIBUTING:** Describe accepted contributions and the project's actual setup, checks, and contribution process.
-- **Issue templates:** Start with short forms for the selected categories and blank issues enabled. Adapt fields and routing to the project's needs. Direct vulnerability details to a private channel.
+- **Issue templates:** Start with short forms for the selected categories and blank issues enabled. Adapt fields, labels, and routing to the project's needs. Direct vulnerability details to a private channel through the bug forms.
 - **PR template:** Start with the short variant and add detail where useful.
 - **License and conduct:** Fetch the selected canonical text and preserve its required notices. Resolve an existing licensing conflict before replacing text.
 - **SECURITY:** State the confirmed support scope and a working private route. If GitHub enablement is pending, keep that dependency clear before publication.
