@@ -31,30 +31,23 @@ Open **Settings → Branches** and edit the existing rule for `main`, or choose 
 
 If an existing ruleset supplies these protections, review its effective settings rather than adding a competing classic rule. GitHub documents the controls in [Managing a branch protection rule](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule).
 
-No release job needs a bypass of branch protection. Maintainers push signed tags for reviewed commits; the workflow creates GitHub drafts and does not commit to `main`.
+No release job needs a bypass of branch protection. The approved publication job creates release tags and GitHub Releases at the checked commit; it does not commit to `main`.
 
 ## Configure squash merging
 
 In **Settings → General → Pull Requests**, enable squash merging and disable merge commits and rebase merging. Set the default squash commit message to use the pull-request title, so the checked conventional title becomes the commit title even for a single-commit PR. See [GitHub's squash merge settings](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/configuring-commit-squashing-for-pull-requests).
 
-Reopen the settings to confirm they were saved, and inspect a pull request to confirm that the three intended checks are required and squash merging is the available merge method. Complete the release-specific setup below before the first draft.
-
-## Authorize release signers
-
-Choose who may authorize a release. Each signer keeps the private SSH signing key on their own machine, agent or hardware device. Authenticate the public key and fingerprint using the [signer verification procedure](../VERIFYING.md#get-the-expected-signer-independently) before enrolling it.
-
-Maintain an OpenSSH allowed-signers file containing one entry per approved key. Each entry consists of the maintainer principal, the restriction `namespaces="git"`, and the public key type and base64 value. For a single public key, create a line locally with the actual principal and previously verified public key:
-
-```sh
-{ printf '%s namespaces="git" ' "$MAINTAINER_PRINCIPAL"; cat release-signing.pub; } > allowed_signers
-```
-
-In **Settings → Secrets and variables → Actions → Variables**, set `RELEASE_ALLOWED_SIGNERS` to the contents of the reviewed file, and `RELEASE_REPOSITORY` to the target repository’s exact `OWNER/REPO`. Both must be **repository variables**, since validation runs before entering the release environment. The allowlist is public verification material but controls who may authorize releases; restrict who may change it. Publish the keys and their fingerprints through a channel consumers can authenticate independently of the release tag. Document which versions each key covers. Update both the Actions variable and the public notice on rotation or revocation; retain historical verification information and distinguish a compromise from an ordinary retirement.
+Reopen the settings to confirm they were saved, and inspect a pull request to confirm that the three intended checks are required and squash merging is the available merge method. Complete the release-specific setup below before the first publication.
 
 ## Prepare the release repository
 
-1. Under **Settings → Environments**, configure an environment named `release`. Limit deployment to the branch `main`; do not permit tag refs or other branches. The maintainer’s local publication step is the human decision; a second environment reviewer is optional. No environment secret is required for signing or publication.
-2. Under **Settings → General → Releases**, enable [release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes) before publishing. Enabling it only affects future releases. Use an authorized local GitHub CLI session for finalization. It needs Administration: read for the immutable-release setting, Actions: read for the successful run and artifacts, Variables: read for the independent signer allowlist, and Contents: write to publish the draft. These permissions are for the maintainer; Actions does not need an administration token.
-3. Protect release tags against updates and deletion. Use tag rulesets matching this repository’s actual plugin tag names, and authorize only designated maintainers to create them. If granting a bypass to allow tag creation, use separate creation and update/deletion rulesets so that a release signer cannot bypass both protections with the same grant. Check organization rules too.
-4. Confirm Actions policy permits the draft job’s job-level `contents: write` and the read-only validation and scan jobs. A secret token, GitHub App private key or bot that pushes tags is not needed. Keep `main` and the release environment protected: their workflows govern what reaches the draft.
-5. Follow the [release guide](releases.md) using one deliberately selected version for the first plugin. Test signer recognition, notes, scanning and draft preparation before finalization. After publication, use [consumer verification](../VERIFYING.md) from a separate checkout.
+1. In **Settings → Secrets and variables → Actions → Variables**, set the repository variable `RELEASE_REPOSITORY` to the exact target `OWNER/REPO`. This enables publication only in the intended repository.
+2. In **Settings → Environments**, configure an environment named `release`. Limit deployment to `main`, with `hesreallyhim` as a required reviewer. Allow self-review for this single-owner repository and disable administrator bypass. This approval authorizes publication of the exact commit whose checks and scan completed in that run. No environment secret or personal signing key is needed.
+3. In **Settings → General → Releases**, enable [release immutability](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/establish-provenance-and-integrity/prevent-release-changes), or confirm an organization policy enables it for this repository. This is a one-time prerequisite that must remain enabled; it applies only to future releases. The workflow's `GITHUB_TOKEN` cannot read the administration setting. It verifies the attestation after publishing, but that check cannot prevent an already-published mutable release if an administrator disables immutability.
+4. No custom release-tag creation or preservation rulesets are required. Repository writers are trusted to manage tags and releases, including correcting or deleting tags that are not attached to a published immutable release. Once an immutable release is published, GitHub locks its associated tag and assets while that release exists. This protection does not apply retroactively to older releases or to unpublished tags.
+5. Confirm Actions policy permits job-level `contents: write` for publication and read-only access for planning, checks, and scans. Keep `main` and the `release` environment protected: the reviewed workflow, successful checks, and owner approval govern publication through this workflow. Repository writers can also publish releases directly; the environment is not a repository-wide release-access restriction. No additional secret token or signing bot is needed.
+6. Follow the [release guide](releases.md) with a deliberately selected plugin version. Setup remains incomplete until a run confirms that tag creation is permitted, publication waits for owner approval, and the release attestation identifies the checked commit. After publication, use [consumer verification](../VERIFYING.md) from a separate checkout.
+
+The live `release` environment is configured for `main` only, with `hesreallyhim` as required reviewer, administrator bypass disabled, and self-approval allowed because the owner initiates releases. Release immutability is enabled. The release policy uses ordinary writer permissions without custom release-tag rulesets.
+
+Historical SSH-signed tags remain verifiable using the [historical signer instructions](../VERIFYING.md#historical-ssh-signed-tags). Their signer allowlist is not an input to the current publication workflow.

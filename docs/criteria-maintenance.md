@@ -53,8 +53,8 @@ Use the revision recorded in the particular guidance being reviewed, rather than
 
 ## Release and automation
 
-Weekly checks download the public application pages, compare the bundled catalog, and retain evidence without modifying files in Git or creating PRs. Routine tests remain offline against saved fixtures.
+The independent weekly or manually triggered criteria audit downloads the public application pages, compares the bundled catalog, and retains evidence without modifying files in Git or creating PRs. A reported difference or download failure is advisory: investigate it as maintenance work; it never blocks publication. Routine tests remain offline against saved fixtures.
 
-PRs that change files under Badge Buddy’s `assets/criteria/` run fresh website verification. Changing the bundled catalog requires a version decision for Badge Buddy. Preparing a signed Badge Buddy release repeats the live check against that exact commit; releases of other plugins do not run it. Use `make release-check BADGE_REPO=../best-practices-badge` to run the live check and local tests yourself. See [plugin releases](releases.md) for the release procedure.
+Changing the bundled catalog still requires a version decision for Badge Buddy. Use `make criteria-audit BADGE_REPO=../best-practices-badge` for a strict live check against the selected upstream checkout; this maintenance command fails on disagreement or incomplete evidence. `make release-check` is an offline alias for `make check` and does not require the live website to match the bundled catalog. See [plugin releases](releases.md) for publication.
 
 Downloaded content is used under the website's published terms and licensing. Retain the OpenSSF Best Practices badge contributors' attribution and the applicable notices when distributing derived material. Respect the site's robots policy and rate limits.
