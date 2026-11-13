@@ -102,6 +102,47 @@ async (page) => {
     "https://example.org/explicit!", "https://example.org/docs_(v1)", "https://example.org/bare",
   ]), "Evidence URLs must preserve Markdown boundaries and trim prose punctuation");
 
+  const navigation = await page.evaluate(() => {
+    const text = '<img src=x onerror="window.injected=true">';
+    const unknownKeys = ["unexpected", "javascript:alert(1)", "https://example.org/", 'all/\"<img>'];
+    const view = { ...views.get("all"), label: text, description: text };
+    elements.bucketGrid.replaceChildren();
+    renderDashboard(new Map([["all", view], ...unknownKeys.map((key) => [key, view])]));
+    const card = elements.bucketGrid.querySelector("a");
+    const dashboard = elements.bucketGrid.childElementCount === 1 &&
+      card.getAttribute("href") === "#view=all" && card.querySelector("h2").textContent === text &&
+      card.querySelector("p").textContent === text && !card.querySelector("img");
+
+    views.set("unexpected", view);
+    history.replaceState(null, "", "#view=unexpected");
+    showSelection();
+    const unknownView = !elements.overviewView.hidden && elements.listView.hidden;
+
+    const rejectedIds = ["", "bad/id", "bad#id", "bad%2Fid", 'bad\"<img>', "bad\nid", "bad\n", "bad\r", 7, null].every((id) => {
+      try {
+        renderList({ ...view, criterionIds: [id], count: 1 }, "all");
+        return false;
+      } catch (error) {
+        return error.message === "Invalid criterion identifier for navigation" &&
+          !elements.tocList.childElementCount && !elements.criterionList.childElementCount;
+      }
+    });
+
+    const first = criteria.values().next().value;
+    criteria.set(first.id, { ...first, displayId: text });
+    renderList({ ...view, criterionIds: [first.id], count: 1 }, "all");
+    const link = elements.tocList.querySelector("a");
+    const article = elements.criterionList.querySelector("article");
+    const toc = link.textContent === text && !elements.tocList.querySelector("img") &&
+      link.getAttribute("href") === `#view=all/${first.id}` && article.id === `view=all/${first.id}`;
+    return { dashboard, unknownView, rejectedIds, toc, injected: Boolean(window.injected) };
+  });
+  check(navigation.dashboard && navigation.unknownView, "Only fixed local dashboard views may be rendered or selected");
+  check(navigation.rejectedIds, "Malformed criterion identifiers must fail before an article or ToC link is created");
+  check(navigation.toc && !navigation.injected, "Navigation labels must remain text and valid criterion fragments must remain unchanged");
+  await page.goto(`${base}#view=all`);
+  await page.reload();
+
   // Deliver regenerated HTML on the real reload timer, without changing the browser's in-memory assessment.
   const html = await page.request.get(base).then((response) => response.text());
   const changed = JSON.parse(JSON.stringify(original));
@@ -150,5 +191,5 @@ async (page) => {
     await page.goto(`${base}#view=all`);
     await page.reload();
   }
-  return { criteria: original.total, widths: [1440, 600, 375], checks: "dashboard, full lists, ToCs, stable numbering, labels, focus, scroll, five-second refresh, two wording revisions, approved move, empty bucket, safe text" };
+  return { criteria: original.total, widths: [1440, 600, 375], checks: "dashboard, full lists, ToCs, stable numbering, labels, focus, scroll, five-second refresh, two wording revisions, approved move, empty bucket, safe text, fixed view routes, criterion fragments" };
 }

@@ -48,17 +48,7 @@ Each plugin's README explains what to ask for once it is installed. Badge Buddy 
 
 <!-- treestamp:start -->
 <!-- treestamp:config
-hidden = [
-    ".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml",
-    ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md",
-    "CONTRIBUTING.md", "LICENSE", "Makefile", "SECURITY.md",
-    "THIRD_PARTY_NOTICES.md", "VERIFYING.md", "package-lock.json",
-    "package.json", "plugins/badge-buddy/.claude-plugin",
-    "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets",
-    "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin",
-    "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts",
-    "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt",
-]
+hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".prettierignore", ".prettierrc.json", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "LICENSE", "Makefile", "SECURITY.md", "THIRD_PARTY_NOTICES.md", "VERIFYING.md", "package-lock.json", "package.json", "plugins/badge-buddy/.claude-plugin", "plugins/badge-buddy/THIRD_PARTY_NOTICES.md", "plugins/badge-buddy/assets", "plugins/badge-buddy/scripts", "plugins/release-buddy/.claude-plugin", "plugins/starter-buddy/.claude-plugin", "plugins/starter-buddy/scripts", "requirements-dev.txt", "ruff.toml", "upstream-review-paths.txt"]
 -->
 ```sh
 ./
@@ -104,7 +94,7 @@ make plugin-validate  # validate each plugin's structure (needs the Claude Code 
 make mod-test         # run the mods' tests (needs the Claude Code CLI)
 ```
 
-The runtime uses only the Python standard library; the local `venv` holds the development dependencies. `make check` runs the plugin and maintenance suites in separate processes and compiles the Python sources. Continuous integration runs the same target on every push and pull request. See [criteria maintenance](docs/criteria-maintenance.md) for catalog updates and [plugin releases](docs/releases.md) for how to release a plugin: bump its manifest, sign the tag, review the OSV report, then publish the immutable draft. See [Verifying a plugin release](VERIFYING.md) to check a signed release and its attachments.
+The runtime uses only the Python standard library; the local `venv` holds the development dependencies. `make check` runs the plugin and maintenance suites in separate processes and compiles the Python sources. Continuous integration runs the same target on every push and pull request. See [criteria maintenance](docs/criteria-maintenance.md) for catalog updates and [plugin releases](docs/releases.md) for how to release a plugin: merge its version and reviewed notes, review the checks and OSV report, then approve publication in GitHub. The workflow tags the checked commit and publishes an immutable release. See [Verifying a plugin release](VERIFYING.md) to check its source and attachments; marketplace installation does not automatically pin or verify a release.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues and propose changes.
 

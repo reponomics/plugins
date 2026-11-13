@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate plugin versions and prepare drafts from maintainer-signed release tags."""
+"""Plan reviewed plugin versions and publish verified GitHub-native releases."""
 
 from __future__ import annotations
 
@@ -124,8 +124,13 @@ def plan(base: str = "HEAD^", head: str = "HEAD") -> dict:
         old = previous.get(name, {}).get("version")
         if old == plugin["version"]:
             _check_catalog_version(plugin, base_sha, head_sha)
-            continue
-        if old is not None and not _valid_transition(name, old, plugin["version"]):
+            if not _first_reviewed_notes(plugin, base_sha, head_sha):
+                continue
+        if (
+            old is not None
+            and old != plugin["version"]
+            and not _valid_transition(name, old, plugin["version"], head_sha)
+        ):
             raise ValueError(
                 f"{name}: changed version must increase in SemVer precedence"
             )
@@ -136,12 +141,18 @@ def plan(base: str = "HEAD^", head: str = "HEAD") -> dict:
     return {"base": base_sha, "head": head_sha, "plugins": changed}
 
 
-def _valid_transition(name: str, previous: str, version: str) -> bool:
+def _valid_transition(name: str, previous: str, version: str, head: str) -> bool:
     before, after = _precedence(previous), _precedence(version)
     if after >= before:
         return after > before  # Build metadata alone cannot be a version bump.
-    return git("rev-parse", "--is-shallow-repository") == "false" and not git(
-        "tag", "--list", f"{name}--v*"
+    if git("rev-parse", "--is-shallow-repository") != "false":
+        return False
+    tags = git("tag", "--list", f"{name}--v*").splitlines()
+    # The first publication can reset an inherited version. Its exact lightweight
+    # tag preserves that decision on historical retries, even after later releases.
+    own_tag = f"{name}--v{version}"
+    return not tags or (
+        own_tag in tags and git("rev-parse", f"refs/tags/{own_tag}") == head
     )
 
 
@@ -175,67 +186,14 @@ def release_notes(plugin: dict, head: str) -> str:
     return notes
 
 
-def _require_decision_commit(plugin: dict, head: str) -> None:
-    parents = git("rev-list", "--parents", "-n", "1", head).split()[1:]
-    if not parents or not git("ls-tree", parents[0], "--", MARKETPLACE):
-        return
-    old = plugins_at(parents[0]).get(plugin["name"])
-    if (
-        old
-        and old["version"] == plugin["version"]
-        and git("ls-tree", parents[0], "--", _notes_path(plugin))
-    ):
-        raise ValueError(
-            "tag must point to the version decision or first reviewed notes commit"
-        )
-
-
-def verify_tag(tag: str, allowed_signers: Path) -> dict:
-    """Read tagged data as Git objects. Never execute or check out the tagged tree."""
-    match = re.fullmatch(r"([a-z0-9][a-z0-9-]*)--v([0-9]+\..+)", tag)
-    if not match:
-        raise ValueError("tag must be PLUGIN--vSEMVER")
-    name, version = match.groups()
-    _version(version)
-    if git("rev-parse", "--is-shallow-repository") != "false":
-        raise ValueError("verification requires full history and release tags")
-    ref = f"refs/tags/{tag}"
-    oid = git("rev-parse", "--verify", ref)
-    if git("cat-file", "-t", oid) != "tag":
-        raise ValueError("release requires a signed annotated tag")
-    headers = git("cat-file", "tag", oid).split("\n\n", 1)[0].splitlines()
-    if f"tag {tag}" not in headers or "type commit" not in headers:
-        raise ValueError(
-            "signed tag name or target type does not match its release ref"
-        )
-    # verify-tag detects signature format from the object, irrespective of gpg.format.
-    # Disable the other verifiers: a trusted OpenPGP or X.509 key is not an SSH allowlist entry.
-    git(
-        "-c",
-        "gpg.openpgp.program=false",
-        "-c",
-        "gpg.x509.program=false",
-        "-c",
-        f"gpg.ssh.allowedSignersFile={allowed_signers.resolve(strict=True)}",
-        "verify-tag",
-        oid,
-    )
-    head = resolve(oid)
-    if run(
-        "git",
-        "merge-base",
-        "--is-ancestor",
-        head,
-        "refs/remotes/origin/main",
-        check=False,
-    ).returncode:
-        raise ValueError("signed commit is not reachable from origin/main")
-    plugin = plugins_at(head).get(name)
-    if not plugin or plugin["version"] != version:
-        raise ValueError("tag does not match the registered plugin manifest")
-    release_notes(plugin, head)
-    _require_decision_commit(plugin, head)
-    return {**plugin, "tag": tag, "head": head, "object": oid}
+def _first_reviewed_notes(plugin: dict, base: str, head: str) -> bool:
+    path = _notes_path(plugin)
+    if git("ls-tree", base, "--", path) or not git("ls-tree", head, "--", path):
+        return False
+    # A tag at this exact event commit is an idempotent publication retry.
+    tag = f"refs/tags/{plugin['name']}--v{plugin['version']}"
+    existing = run("git", "rev-parse", "--verify", tag, check=False)
+    return existing.returncode != 0 or existing.stdout.strip() == head
 
 
 def api(endpoint: str, *args: str, missing: bool = False) -> dict | None:
@@ -271,19 +229,96 @@ def evidence_digests(directory: Path) -> dict[str, str]:
     return hashes
 
 
-def check_remote_ref(repository: str, plugin: dict) -> None:
-    ref = api(f"repos/{repository}/git/ref/tags/{quote(plugin['tag'], safe='')}")
-    target = ref["object"]
-    if target.get("sha") != plugin["object"] or target.get("type") != "tag":
-        raise ValueError("remote signed tag object changed; stop and investigate")
+def _validate_scan_package(item: Any) -> None:
+    if not isinstance(item, dict) or not isinstance(item.get("package"), dict):
+        raise ValueError("malformed OSV package")
+    package = item["package"]
+    coordinate = tuple(package.get(key) for key in ("ecosystem", "name", "version"))
+    if not all(isinstance(value, str) and value for value in coordinate):
+        raise ValueError("malformed OSV package coordinate")
+    if coordinate[0] not in {"npm", "PyPI"}:
+        raise ValueError("unexpected ecosystem in release evidence")
+    vulnerabilities = item.get("vulnerabilities", [])
+    if not isinstance(vulnerabilities, list) or vulnerabilities:
+        raise ValueError("invalid or nonempty vulnerabilities in release evidence")
 
 
-def _require_new_release(repository: str, tag: str) -> None:
-    root = f"repos/{repository}/releases"
-    if api(f"{root}/tags/{quote(tag, safe='')}", missing=True) is not None:
-        raise ValueError(f"{tag}: release already exists; inspect it, never overwrite")
-    # GraphQL includes an unpublished draft for callers with push access. The REST
-    # by-tag endpoint alone is insufficient to distinguish it from a missing release.
+def _validate_scan_results(report: dict) -> None:
+    results = report.get("results")
+    if not isinstance(results, list) or not results:
+        raise ValueError("missing completed OSV results")
+    for source in results:
+        packages = source.get("packages") if isinstance(source, dict) else None
+        if not isinstance(packages, list) or not packages:
+            raise ValueError("missing OSV package inventory")
+        for item in packages:
+            _validate_scan_package(item)
+
+
+def validate_evidence(directory: Path, head: str) -> dict[str, str]:
+    hashes = evidence_digests(directory)
+    report = json.loads((directory / "osv-results.json").read_text())
+    if not isinstance(report, dict):
+        raise ValueError("OSV report must be an object")
+    _validate_scan_results(report)
+    scope = (directory / "scan-scope.md").read_text()
+    # The successful scan job and same-run artifact identity establish completeness.
+    # These checks bind its evidence to the release without parsing editorial prose.
+    lines = [line.strip() for line in scope.splitlines()]
+    commits = [line for line in lines if line.startswith("Commit:")]
+    outcomes = [line for line in lines if line.startswith("PASS:")]
+    if (
+        commits != [f"Commit: `{head}`"]
+        or outcomes != ["PASS: no known vulnerabilities found."]
+        or "BLOCKED" in scope
+        or "INCOMPLETE" in scope
+    ):
+        raise ValueError(
+            "scan scope must record one exact commit and a successful PASS outcome"
+        )
+    return hashes
+
+
+def check_checkout(base: str, head: str) -> None:
+    if not re.fullmatch(r"[a-f0-9]{40}", head) or head != resolve("HEAD"):
+        raise ValueError("publish requires the full event SHA equal to checkout HEAD")
+    if base != "empty" and re.fullmatch(r"[a-f0-9]{40}", base) is None:
+        raise ValueError("publish requires the full event base SHA or empty")
+    if git("rev-parse", "--is-shallow-repository") != "false":
+        raise ValueError("publication requires full history and tags")
+    for ancestor, descendant in ((head, "refs/remotes/origin/main"), (base, head)):
+        if ancestor == "empty":
+            continue
+        if run(
+            "git", "merge-base", "--is-ancestor", ancestor, descendant, check=False
+        ).returncode:
+            raise ValueError(
+                "release commit must be on origin/main and descend from the event base"
+            )
+
+
+def remote_ref(repository: str, plugin: dict) -> dict | None:
+    ref = api(
+        f"repos/{repository}/git/ref/tags/{quote(plugin['tag'], safe='')}", missing=True
+    )
+    if ref is not None:
+        target = ref.get("object", {})
+        if target.get("sha") != plugin["head"] or target.get("type") != "commit":
+            raise ValueError("remote release tag conflicts with the exact event commit")
+    return ref
+
+
+def _existing_release(repository: str, tag: str) -> dict | None:
+    record = api(
+        f"repos/{repository}/releases/tags/{quote(tag, safe='')}", missing=True
+    )
+    if record is not None:
+        if record.get("draft") is not False:
+            raise ValueError(
+                "existing draft; inspect and explicitly recover it before retrying"
+            )
+        return record
+    # REST's by-tag endpoint can hide drafts. GraphQL includes drafts for push callers.
     owner, repo = repository.split("/")
     data = api(
         "graphql",
@@ -297,19 +332,98 @@ def _require_new_release(repository: str, tag: str) -> None:
         f"t={tag}",
     )
     if data["data"]["repository"]["release"] is not None:
-        raise ValueError(f"{tag}: existing draft; inspect it before retrying")
+        raise ValueError(
+            "existing draft; inspect and explicitly recover it before retrying"
+        )
+    return None
 
 
-def prepare_draft(repository: str, plugin: dict, directory: Path) -> dict:
-    if not REPOSITORY.fullmatch(repository) or ".." in repository:
-        raise ValueError("expected OWNER/REPO")
-    hashes = evidence_digests(directory)
-    check_remote_ref(repository, plugin)
-    root = f"repos/{repository}/releases"
-    tag = plugin["tag"]
-    _require_new_release(repository, tag)
+def _asset_digests(record: dict) -> dict[str, str]:
+    assets = record.get("assets")
+    if not isinstance(assets, list) or len(assets) != len(ASSETS):
+        raise ValueError("release must contain exactly the expected evidence assets")
+    hashes = {}
+    for asset in assets:
+        if not isinstance(asset, dict) or asset.get("state") != "uploaded":
+            raise ValueError("release evidence asset is not uploaded")
+        name, digest = asset.get("name"), asset.get("digest")
+        if (
+            name not in ASSETS
+            or name in hashes
+            or not isinstance(digest, str)
+            or not re.fullmatch(r"sha256:[a-f0-9]{64}", digest)
+        ):
+            raise ValueError("release evidence asset names or digests are invalid")
+        hashes[name] = digest
+    return hashes
+
+
+def _check_release_subject(record: dict, plugin: dict) -> None:
+    expected = {"tag_name": plugin["tag"], "target_commitish": plugin["head"]}
+    if any(record.get(key) != value for key, value in expected.items()):
+        raise ValueError(
+            "release subject differs from the exact reviewed tag and commit"
+        )
+
+
+def check_release(record: dict, plugin: dict, hashes: dict[str, str]) -> None:
+    _check_release_subject(record, plugin)
+    expected = {
+        "name": f"{plugin['name']} {plugin['version']}",
+        "prerelease": plugin["prerelease"],
+    }
+    if any(record.get(key) != value for key, value in expected.items()):
+        raise ValueError("release metadata differs from the exact reviewed release")
+    notes = release_notes(plugin, plugin["head"]).replace("\r\n", "\n").strip()
+    body = record.get("body")
+    if not isinstance(body, str) or body.replace("\r\n", "\n").strip() != notes:
+        raise ValueError("release notes differ from the reviewed commit")
+    if _asset_digests(record) != hashes:
+        raise ValueError("release evidence digests differ; leave draft unpublished")
+
+
+def verify_published(
+    repository: str, plugin: dict, record: dict, hashes: dict[str, str] | None = None
+) -> None:
+    if record.get("immutable") is not True or record.get("draft") is not False:
+        raise ValueError(
+            "GitHub did not confirm an immutable published release; inspect repository immutability settings and this release"
+        )
+    _check_release_subject(record, plugin)
+    if remote_ref(repository, plugin) is None:
+        raise ValueError("published release tag is missing")
+    if hashes is None:
+        # A rerun verifies the original assets, not a fresh scan's timestamped bytes.
+        hashes = _asset_digests(record)
+        with tempfile.TemporaryDirectory(prefix="release-evidence-") as temp:
+            run(
+                "gh",
+                "release",
+                "download",
+                plugin["tag"],
+                "--repo",
+                repository,
+                "--dir",
+                temp,
+                "--pattern",
+                ASSETS[0],
+                "--pattern",
+                ASSETS[1],
+            )
+            if validate_evidence(Path(temp), plugin["head"]) != hashes:
+                raise ValueError(
+                    "published evidence bytes do not match recorded digests"
+                )
+    else:
+        # New publication still must match reviewed notes and all draft metadata.
+        check_release(record, plugin, hashes)
+    run("gh", "release", "verify", plugin["tag"], "--repo", repository)
+    print(f"Verified immutable release: {record['html_url']}")
+
+
+def _create_draft(repository: str, plugin: dict) -> int:
     payload = {
-        "tag_name": tag,
+        "tag_name": plugin["tag"],
         "name": f"{plugin['name']} {plugin['version']}",
         "body": release_notes(plugin, plugin["head"]),
         "target_commitish": plugin["head"],
@@ -321,7 +435,7 @@ def prepare_draft(repository: str, plugin: dict, directory: Path) -> dict:
         request = Path(temp) / "draft.json"
         request.write_text(json.dumps(payload))
         created = api(
-            root,
+            f"repos/{repository}/releases",
             "--method",
             "POST",
             "-H",
@@ -329,16 +443,23 @@ def prepare_draft(repository: str, plugin: dict, directory: Path) -> dict:
             "--input",
             str(request),
         )
-    release_id = created["id"]
+    release_id = created.get("id")
     if (
-        not created.get("draft")
-        or created.get("tag_name") != tag
+        created.get("draft") is not True
+        or created.get("tag_name") != plugin["tag"]
         or type(release_id) is not int
+        or release_id <= 0
     ):
-        raise ValueError("unexpected GitHub draft response")
+        raise ValueError("unexpected GitHub draft response; inspect before retrying")
+    return release_id
+
+
+def _upload_evidence(
+    repository: str, release_id: int, directory: Path, hashes: dict[str, str]
+) -> None:
     for name in ASSETS:
-        endpoint = f"https://uploads.github.com/{root}/{release_id}/assets?name={name}"
         path = directory / name
+        endpoint = f"https://uploads.github.com/repos/{repository}/releases/{release_id}/assets?name={name}"
         asset = api(
             endpoint,
             "--method",
@@ -354,13 +475,52 @@ def prepare_draft(repository: str, plugin: dict, directory: Path) -> dict:
             raise ValueError(
                 f"uploaded evidence mismatch for {name}; leave draft unpublished"
             )
-    check_remote_ref(repository, plugin)
-    print(f"Prepared draft {tag}. It has not been published.")
-    return {
-        **{key: plugin[key] for key in ("tag", "head", "object")},
-        "draft_id": release_id,
-        "assets": hashes,
-    }
+
+
+def _publish_new(
+    repository: str, plugin: dict, directory: Path, hashes: dict[str, str]
+) -> None:
+    if remote_ref(repository, plugin) is None:
+        api(
+            f"repos/{repository}/git/refs",
+            "--method",
+            "POST",
+            "-f",
+            f"ref=refs/tags/{plugin['tag']}",
+            "-f",
+            f"sha={plugin['head']}",
+        )
+    if remote_ref(repository, plugin) is None:
+        raise ValueError("release tag creation was not confirmed")
+    release_id = _create_draft(repository, plugin)
+    _upload_evidence(repository, release_id, directory, hashes)
+    endpoint = f"repos/{repository}/releases/{release_id}"
+    record = api(endpoint)
+    if record.get("id") != release_id or record.get("draft") is not True:
+        raise ValueError("new draft identity changed; inspect before retrying")
+    check_release(record, plugin, hashes)
+    if remote_ref(repository, plugin) is None:
+        raise ValueError("release tag disappeared; leave draft unpublished")
+    api(endpoint, "--method", "PATCH", "-F", "draft=false", "-f", "make_latest=false")
+    verify_published(repository, plugin, api(endpoint), hashes)
+
+
+def publish(base: str, head: str, repository: str, directory: Path) -> None:
+    if not REPOSITORY.fullmatch(repository) or ".." in repository:
+        raise ValueError("expected OWNER/REPO")
+    check_checkout(base, head)
+    selected = [{**plugin, "head": head} for plugin in plan(base, head)["plugins"]]
+    hashes = validate_evidence(directory, head)
+    pending = []
+    for plugin in selected:
+        remote_ref(repository, plugin)
+        existing = _existing_release(repository, plugin["tag"])
+        if existing is not None:
+            verify_published(repository, plugin, existing)
+        else:
+            pending.append(plugin)
+    for plugin in pending:
+        _publish_new(repository, plugin, directory, hashes)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -370,36 +530,20 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--base", default="HEAD^")
     prepare.add_argument("--head", default="HEAD")
     prepare.add_argument("--output", type=Path, required=True)
-    tag_parser = argparse.ArgumentParser(add_help=False)
-    tag_parser.add_argument("--tag", required=True)
-    tag_parser.add_argument("--allowed-signers", type=Path, required=True)
-    commands.add_parser("verify-tag", parents=[tag_parser])
-    draft = commands.add_parser("draft", parents=[tag_parser])
-    draft.add_argument("--receipt", type=Path, required=True)
-    draft.add_argument("--object", required=True)
-    draft.add_argument("--repository", required=True)
-    draft.add_argument("--evidence", type=Path, required=True)
+    publication = commands.add_parser("publish")
+    publication.add_argument("--base", required=True)
+    publication.add_argument("--head", required=True)
+    publication.add_argument("--repository", required=True)
+    publication.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "plan":
             result = plan(args.base, args.head)
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, indent=2) + "\n")
-            print(
-                f"Planned {len(result['plugins'])} plugin version change(s): {args.output}"
-            )
+            print(f"Planned {len(result['plugins'])} plugin release(s): {args.output}")
         else:
-            plugin = verify_tag(args.tag, args.allowed_signers)
-            if args.command == "draft":
-                if args.object != plugin["object"]:
-                    raise ValueError("signed tag changed since preflight")
-                receipt = prepare_draft(args.repository, plugin, args.evidence)
-                args.receipt.write_text(json.dumps(receipt) + "\n")
-            else:
-                print(
-                    f"head={plugin['head']}\nobject={plugin['object']}\nplugin={plugin['name']}"
-                )
-                print(f"prerelease={str(plugin['prerelease']).lower()}")
+            publish(args.base, args.head, args.repository, args.evidence)
         return 0
     except (
         OSError,

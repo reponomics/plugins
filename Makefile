@@ -17,7 +17,8 @@ UPSTREAM_REF ?=
 RELEASE_BASE ?= HEAD^
 RELEASE_HEAD ?= HEAD
 RELEASE_PLAN ?= .cache/releases/plan.json
-export TAG REPO RUN OSV_SCANNER
+RELEASE_EVIDENCE ?= .cache/dependency-scan
+export REPO OSV_SCANNER
 RSVG ?= rsvg-convert
 PNGQUANT ?= pngquant
 OXIPNG ?= oxipng
@@ -38,7 +39,7 @@ PY_DIRS := $(wildcard $(foreach plugin,$(PLUGINS),$(plugin)/scripts $(plugin)/sk
 .PHONY: eval-release-skills mod-test
 .PHONY: format-deps hooks-install hooks-check hooks-uninstall
 .PHONY: treestamp-check treestamp-update
-.PHONY: download-criteria compare-criteria release-check checkout-upstream release-plan release-finalize dependency-scan
+.PHONY: download-criteria compare-criteria criteria-audit release-check checkout-upstream release-plan release-publish dependency-scan
 
 help: ## Show available targets.
 	@awk 'BEGIN {FS = ":.*## "; printf "Usage: make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -124,8 +125,8 @@ checkout-upstream: setup ## Create a clean upstream clone at UPSTREAM_REF (defau
 release-plan: setup ## Preview manifest version changes between RELEASE_BASE and RELEASE_HEAD.
 	$(VENV_PYTHON) tools/plugin_release.py plan --base "$(RELEASE_BASE)" --head "$(RELEASE_HEAD)" --output "$(RELEASE_PLAN)"
 
-release-finalize: setup ## Verify and publish the prepared immutable draft (REPO, TAG and RUN from its Actions summary).
-	$(VENV_PYTHON) tools/finalize_release.py
+release-publish: setup ## Publish the verified plan in the approved Actions job (REPO, RELEASE_BASE, RELEASE_HEAD).
+	$(VENV_PYTHON) tools/plugin_release.py publish --base "$(RELEASE_BASE)" --head "$(RELEASE_HEAD)" --repository "$(REPO)" --evidence "$(RELEASE_EVIDENCE)"
 
 dependency-scan: setup ## Scan resolved maintainer dependencies with OSV-Scanner; save evidence under .cache/dependency-scan.
 	$(VENV_PYTHON) tools/scan_dependencies.py --scanner "$$OSV_SCANNER" --output .cache/dependency-scan
@@ -133,10 +134,11 @@ dependency-scan: setup ## Scan resolved maintainer dependencies with OSV-Scanner
 check-criteria: dev-deps ## Check the bundled catalog, selected checkout, and application snapshot agree.
 	$(VENV_PYTHON) tools/criteria_sync.py check --badge-repo "$(BADGE_REPO)" --snapshot "$(CRITERIA_SNAPSHOT)"
 
-release-check: dev-deps ## Explicitly verify the catalog against the live site and run local checks.
+criteria-audit: dev-deps ## Audit catalog freshness against the live site; advisory to release publication.
 	$(MAKE) download-criteria
 	$(MAKE) check-criteria
-	$(MAKE) check
+
+release-check: check ## Run the offline release checks; live criteria freshness is advisory.
 
 render-assets: ## Re-render and compress the PNG beside each SVG in ASSETS, or only SVG=<file>.
 	RSVG="$(RSVG)" PNGQUANT="$(PNGQUANT)" OXIPNG="$(OXIPNG)" tools/render-assets.sh $(if $(SVG),$(SVG),$(ASSETS))

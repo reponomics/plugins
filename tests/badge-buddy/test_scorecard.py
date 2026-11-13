@@ -288,6 +288,48 @@ class ImportTest(ControllerTestCase):
                 self.assertIn("_ossf_scorecard", self.stderr)
 
 
+class RepositoryGuidanceTest(unittest.TestCase):
+    def test_guidance_uses_the_parsed_host_not_a_path_substring(self) -> None:
+        for repo, identity, gitlab in (
+            ("https://GitLab.com/group/subgroup/project.git", "gitlab.com/group/subgroup/project", True),
+            ("http://GitHub.com/example/project.git/", "github.com/example/project", False),
+            ("github.com/gitlab.com/project", "github.com/gitlab.com/project", False),
+            ("gitlab.com/project", "github.com/gitlab.com/project", False),
+            ("gitlab.com/github.com/project", "gitlab.com/github.com/project", True),
+            ("gitlab.com/group.git/project.git.git", "gitlab.com/group.git/project.git", True),
+        ):
+            with self.subTest(repo=repo):
+                self.assertEqual(identity, controller.normalize_repo(repo))
+                notes = " ".join(controller.api_coverage_notes(repo))
+                message = controller.missing_publication_message(repo)
+                self.assertTrue(message.startswith(identity + " has no published"))
+                self.assertEqual(gitlab, "For GitLab" in notes)
+                self.assertEqual(gitlab, "existing GitLab API results" in message)
+                self.assertEqual(not gitlab, "Action publishing run" in notes)
+                self.assertEqual(not gitlab, "publish_results" in message)
+
+    def test_each_guidance_entry_point_rejects_invalid_repository_urls(self) -> None:
+        for repo in (
+            "https://evil.test/gitlab.com/group/project",
+            "https://gitlab.com.evil.test/group/project",
+            "https://evil-gitlab.com/group/project",
+            "https://gitlab.com@evil.test/group/project",
+            "https://evil.test@gitlab.com/group/project",
+            "https://gitlab.com:443/group/project",
+            "https://gitlab.com./group/project",
+            "https://gitlab.com%2eevil.test/group/project",
+            "https://gitlab.com\\@evil.test/group/project",
+            "https://github.com/owner/repo?next=gitlab.com/group/project",
+            "https://gitlab.com/group/project?",
+            "https://gitlab.com/group/project#",
+            "https://gitlab.com/group/project/-/issues/1",
+        ):
+            for guidance in (controller.api_coverage_notes, controller.missing_publication_message):
+                with self.subTest(repo=repo, guidance=guidance.__name__):
+                    with self.assertRaises(controller.CommandError):
+                        guidance(repo)
+
+
 class PublicApiTest(ControllerTestCase):
     def test_fetch_reads_public_endpoint_and_uses_only_upstream_score(self) -> None:
         requests: list[tuple[Any, int]] = []
@@ -361,6 +403,13 @@ class PublicApiTest(ControllerTestCase):
             "https://gitlab.com/fdroid/fdroidclient/-/tree/main",
             "https://gitlab.com/group/subgroup/project/-/merge_requests/1",
             "https://gitlab.com/group/subgroup/project/-/",
+            "https://gitlab.com.evil.test/group/project",
+            "https://evil.test/gitlab.com/group/project",
+            "https://gitlab.com@evil.test/group/project",
+            "https://evil.test@gitlab.com/group/project",
+            "https://gitlab.com:443/group/project",
+            "https://gitlab.com/group/project?",
+            "https://gitlab.com/group/project#",
         ):
             with self.subTest(repo=repo):
                 opener = Mock()
@@ -410,6 +459,20 @@ class PublicApiTest(ControllerTestCase):
         self.assertIn("#using-a-gitlab-repository", self.stderr)
         self.assertNotIn("Action", self.stderr)
         self.assertNotIn("publish_results", self.stderr)
+
+    def test_missing_result_message_matches_the_requested_repository_identity(self) -> None:
+        normalized = "gitlab.com/group.git/project.git"
+
+        def opener(request: Any, timeout: int = 0) -> FakeResponse:
+            self.assertEqual("https://api.scorecard.dev/projects/" + normalized, request.full_url)
+            raise urllib.error.HTTPError(request.full_url, 404, "Not Found", {}, io.BytesIO())
+
+        code, _ = self.run_command(
+            ["fetch", "--repo", "https://GitLab.com/group.git/project.git.git"], opener=opener,
+        )
+        self.assert_clean_error(code)
+        self.assertIn(normalized + " has no published", self.stderr)
+        self.assertIn("existing GitLab API results", self.stderr)
 
     def test_api_identity_mismatch_is_not_saved_as_requested_repository(self) -> None:
         document = result_document()

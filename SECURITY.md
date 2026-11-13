@@ -1,6 +1,6 @@
 # Security policy for Reponomics plugins
 
-This policy covers the plugins in this repository, their scripts and hooks, and the release workflow and signing process.
+This policy covers the plugins in this repository, their scripts and hooks, and the release workflow and verification process.
 
 ## Supported versions
 
