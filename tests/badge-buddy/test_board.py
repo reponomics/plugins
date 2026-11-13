@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
 from typing import ClassVar
@@ -72,6 +73,12 @@ class PassiveBoardTests(unittest.TestCase):
         for markup, expected in cases:
             with self.subTest(markup=markup):
                 self.assertEqual(expected, plain_text(markup))
+
+    def test_catalog_ids_are_single_navigation_fragment_segments(self) -> None:
+        for section in self.catalog.section_names:
+            for criterion in self.catalog.section(section):
+                with self.subTest(section=section, criterion=criterion.id):
+                    self.assertIsNotNone(re.fullmatch(r"[A-Za-z0-9_-]+", criterion.id))
 
     def test_future_and_obsolete_criteria_retain_order_and_visible_labels(self) -> None:
         source = json.loads(self.catalog.asset_path.read_text())

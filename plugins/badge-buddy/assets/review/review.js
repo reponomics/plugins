@@ -1,5 +1,13 @@
 "use strict";
 
+// Navigation uses only these literal local routes; evidence URLs are handled separately.
+const viewHrefs = new Map([
+  ["needs_input", "#view=needs_input"],
+  ["unmet", "#view=unmet"],
+  ["na", "#view=na"],
+  ["met", "#view=met"],
+  ["all", "#view=all"],
+]);
 const assessment = JSON.parse(document.querySelector("#assessment-data").textContent);
 const elements = Object.fromEntries([
   "overview-view", "list-view", "project-id", "section-name",
@@ -30,10 +38,12 @@ function renderContext() {
   elements.totalCount.textContent = String(assessment.total);
 }
 
-function renderDashboard() {
-  views.forEach((view, key) => {
+function renderDashboard(dashboardViews) {
+  dashboardViews.forEach((view, key) => {
+    const href = viewHrefs.get(key);
+    if (!href) return;
     const card = document.createElement("a");
-    card.href = `#view=${key}`;
+    card.href = href;
     card.id = `nav-${key}`;
     card.className = "bucket-card";
     card.dataset.view = key;
@@ -53,9 +63,19 @@ function renderDashboard() {
   });
 }
 
-function createCriterion(criterionId, viewKey) {
+function criterionFragment(viewKey, criterionId) {
+  const href = viewHrefs.get(viewKey);
+  if (!href) throw new Error("Unknown assessment view");
+  // Catalog identifiers must remain a single fragment segment.
+  if (typeof criterionId !== "string" || !criterionId || /[^A-Za-z0-9_-]/.test(criterionId)) {
+    throw new Error("Invalid criterion identifier for navigation");
+  }
+  return `${href.slice(1)}/${criterionId}`;
+}
+
+function createCriterion(criterionId, fragment) {
   const article = document.querySelector("#criterion-template").content.firstElementChild.cloneNode(true);
-  article.id = `view=${viewKey}/${criterionId}`;
+  article.id = fragment;
   article.dataset.criterion = criterionId;
   const targets = {};
   article.querySelectorAll("[data-field]").forEach((element) => {
@@ -78,12 +98,13 @@ function renderList(view, key) {
   elements.emptyList.hidden = view.count > 0;
   elements.emptyList.textContent = `No criteria in ${view.label}.`;
   view.criterionIds.forEach((id) => {
+    const fragment = criterionFragment(key, id);
     const criterion = criteria.get(id);
-    const article = createCriterion(id, key);
+    const article = createCriterion(id, fragment);
     const item = document.createElement("li");
     item.value = criterion.number;
     const link = document.createElement("a");
-    link.href = `#${article.id}`;
+    link.href = `#${fragment}`;
     link.id = `toc-${id}`;
     link.textContent = criterion.displayId;
     item.append(link);
@@ -95,7 +116,7 @@ function renderList(view, key) {
 function showSelection(event) {
   // The first part selects a page; the rest is an ordinary in-page anchor.
   const key = location.hash.slice(1).split("/")[0].replace(/^view=/, "");
-  const view = views.get(key);
+  const view = viewHrefs.has(key) ? views.get(key) : undefined;
   const selected = view ? key : "overview";
   if (selected === currentView) return;
   currentView = selected;
@@ -177,7 +198,7 @@ function renderEvidence(justification, target) {
 }
 
 renderContext();
-renderDashboard();
+renderDashboard(views);
 showSelection();
 window.addEventListener("hashchange", showSelection);
 document.querySelector(".skip-link").addEventListener("click", (event) => {

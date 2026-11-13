@@ -80,11 +80,31 @@ jobs:
 
   checks:
     needs: preflight
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.RELEASE_REPOSITORY == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Load the verifier from the dispatch commit on main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.preflight.outputs.head }}
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reverify the signed tag and bind it to preflight before checkout
+        id: verified
+        env:
+          TAG: ${{ inputs.tag }}
+          ALLOWED_SIGNERS: ${{ vars.RELEASE_ALLOWED_SIGNERS }}
+          EXPECTED_OBJECT: ${{ needs.preflight.outputs.object }}
+          EXPECTED_HEAD: ${{ needs.preflight.outputs.head }}
+        run: |
+          printf '%s\n' "$ALLOWED_SIGNERS" > "$RUNNER_TEMP/allowed_signers"
+          python3 -I tools/plugin_release.py verify-tag --tag "$TAG" --allowed-signers "$RUNNER_TEMP/allowed_signers" --expected-object "$EXPECTED_OBJECT" --expected-head "$EXPECTED_HEAD" >> "$GITHUB_OUTPUT"
+      - name: Check out only the locally verified release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.verified.outputs.head }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -92,7 +112,7 @@ jobs:
           python-version: "3.12"
       - run: make check
       - name: Verify Badge Buddy criteria for this release
-        if: needs.preflight.outputs.plugin == 'badge-buddy'
+        if: steps.verified.outputs.plugin == 'badge-buddy'
         run: |
           make checkout-upstream BADGE_REPO="$RUNNER_TEMP/badgeapp"
           make download-criteria

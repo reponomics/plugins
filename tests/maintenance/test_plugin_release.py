@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -163,6 +164,68 @@ class GitFixture(unittest.TestCase):
         tag = f"alpha--v{version}"
         self.sign(tag)
         self.assertEqual(release.verify_tag(tag, self.allow)["version"], version)
+
+    def verify_preflight_command(self, expected_object, expected_head):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch("sys.stdout", output), patch("sys.stderr", errors):
+            code = release.main([
+                "verify-tag", "--tag", self.tag,
+                "--allowed-signers", str(self.allow),
+                "--expected-object", expected_object,
+                "--expected-head", expected_head,
+            ])
+        return code, output.getvalue(), errors.getvalue()
+
+    def test_preflight_binding_accepts_a_signed_historical_main_commit(self):
+        self.sign()
+        tag_object = self.git("rev-parse", self.tag)
+        self.write("later-main-work", "The release decision remains an ancestor.")
+        self.git("update-ref", "refs/remotes/origin/main", self.commit())
+
+        code, output, errors = self.verify_preflight_command(tag_object, self.base)
+        self.assertEqual(0, code, errors)
+        self.assertIn(f"head={self.base}\n", output)
+        self.assertIn(f"object={tag_object}\n", output)
+
+    def test_preflight_binding_rejects_mismatched_or_empty_identities_without_outputs(self):
+        self.sign()
+        tag_object = self.git("rev-parse", self.tag)
+        for expected_object, expected_head, message in (
+            ("0" * 40, self.base, "signed tag changed"),
+            (tag_object, "0" * 40, "release commit changed"),
+            ("", self.base, "signed tag changed"),
+            (tag_object, "", "release commit changed"),
+        ):
+            with self.subTest(object=expected_object, head=expected_head):
+                code, output, errors = self.verify_preflight_command(
+                    expected_object, expected_head
+                )
+                self.assertEqual(1, code)
+                self.assertEqual("", output)
+                self.assertIn(message, errors)
+
+    def test_preflight_binding_rejects_a_replacement_signed_tag_at_the_same_commit(self):
+        self.sign()
+        original_object = self.git("rev-parse", self.tag)
+        self.git(
+            "-c", "gpg.format=ssh",
+            "-c", f"user.signingkey={self.root / 'release'}",
+            "tag", "-fsm", "Replacement annotation", self.tag,
+        )
+        self.assertNotEqual(original_object, self.git("rev-parse", self.tag))
+        code, output, errors = self.verify_preflight_command(original_object, self.base)
+        self.assertEqual(1, code)
+        self.assertEqual("", output)
+        self.assertIn("signed tag changed since preflight", errors)
+
+    def test_preflight_binding_does_not_bypass_signature_validation(self):
+        self.sign()
+        tag_object = self.git("rev-parse", self.tag)
+        self.allow.write_text("other " + self.key("other").with_suffix(".pub").read_text())
+        code, output, errors = self.verify_preflight_command(tag_object, self.base)
+        self.assertEqual(1, code)
+        self.assertEqual("", output)
+        self.assertIn("Plugin release failed", errors)
 
     def test_annotated_but_unsigned_and_lightweight_refused(self):
         self.allow.touch()

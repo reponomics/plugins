@@ -233,7 +233,7 @@ def api_coverage_notes(repo: str) -> list[str]:
         "Published API snapshot: fetching it does not run Scorecard. Verify that a newer "
         "API date and commit reflect the intended remote changes before claiming the badge updated."
     ]
-    if normalize_repo(repo).startswith("gitlab.com/"):
+    if parse_repository_url(repo).hostname == "gitlab.com":
         notes.append(
             "For GitLab, V1 reads existing API results; implementation and publication setup "
             f"guidance is limited to GitHub. For GitLab diagnostics, consult {GITLAB_GUIDANCE}."
@@ -272,6 +272,12 @@ def read_result_file(path: str) -> Result:
 
 def normalize_repo(repo: str) -> str:
     """Normalize public API repository identities without accepting URL suffixes."""
+    parsed = parse_repository_url(repo)
+    return parsed.netloc + parsed.path
+
+
+def parse_repository_url(repo: str) -> urllib.parse.SplitResult:
+    """Validate a public repository and return its canonical host and path."""
     trimmed = repo.strip().rstrip("/")
     if trimmed.count("/") == 1 and ":" not in trimmed:
         trimmed = f"github.com/{trimmed}"
@@ -280,7 +286,10 @@ def normalize_repo(repo: str) -> str:
         raise CommandError("use owner/repo or a public github.com or gitlab.com repository URL")
     if parsed.query or parsed.fragment or "?" in trimmed or "#" in trimmed:
         raise CommandError("repository URLs must not contain a query or fragment")
-    return "/".join([parsed.netloc.lower(), *repository_path_parts(parsed)])
+    return parsed._replace(
+        netloc=parsed.netloc.lower(),
+        path="/" + "/".join(repository_path_parts(parsed)),
+    )
 
 
 def repository_path_parts(parsed: urllib.parse.SplitResult) -> list[str]:
@@ -295,9 +304,10 @@ def repository_path_parts(parsed: urllib.parse.SplitResult) -> list[str]:
     return parts
 
 
-def missing_publication_message(normalized: str) -> str:
-    message = f"{normalized} has no published Scorecard result at this endpoint. "
-    if normalized.startswith("gitlab.com/"):
+def missing_publication_message(repo: str) -> str:
+    parsed = parse_repository_url(repo)
+    message = f"{parsed.netloc}{parsed.path} has no published Scorecard result at this endpoint. "
+    if parsed.hostname == "gitlab.com":
         return (
             message + "V1 supports reading existing GitLab API results, but implementation "
             "and publication setup guidance is limited to GitHub. You can import upstream "
@@ -320,7 +330,7 @@ def fetch_public_api(repo: str, *, opener: Any = urllib.request.urlopen) -> Resu
             document = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
         if error.code == 404:
-            raise CommandError(missing_publication_message(normalized)) from error
+            raise CommandError(missing_publication_message(repo)) from error
         if error.code == 429:
             raise CommandError("public Scorecard API is rate-limited (429); wait before retrying") from error
         raise CommandError(f"public Scorecard API returned HTTP {error.code}; this does not establish a missing result") from error

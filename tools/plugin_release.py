@@ -363,6 +363,16 @@ def prepare_draft(repository: str, plugin: dict, directory: Path) -> dict:
     }
 
 
+def check_preflight_identity(
+    plugin: dict, expected_object: str | None, expected_head: str | None
+) -> None:
+    """Bind a freshly verified tag to the exact subject approved by preflight."""
+    if expected_object is not None and plugin["object"] != expected_object:
+        raise ValueError("signed tag changed since preflight")
+    if expected_head is not None and plugin["head"] != expected_head:
+        raise ValueError("release commit changed since preflight")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -373,7 +383,9 @@ def main(argv: list[str] | None = None) -> int:
     tag_parser = argparse.ArgumentParser(add_help=False)
     tag_parser.add_argument("--tag", required=True)
     tag_parser.add_argument("--allowed-signers", type=Path, required=True)
-    commands.add_parser("verify-tag", parents=[tag_parser])
+    verify = commands.add_parser("verify-tag", parents=[tag_parser])
+    verify.add_argument("--expected-object")
+    verify.add_argument("--expected-head")
     draft = commands.add_parser("draft", parents=[tag_parser])
     draft.add_argument("--receipt", type=Path, required=True)
     draft.add_argument("--object", required=True)
@@ -396,6 +408,7 @@ def main(argv: list[str] | None = None) -> int:
                 receipt = prepare_draft(args.repository, plugin, args.evidence)
                 args.receipt.write_text(json.dumps(receipt) + "\n")
             else:
+                check_preflight_identity(plugin, args.expected_object, args.expected_head)
                 print(
                     f"head={plugin['head']}\nobject={plugin['object']}\nplugin={plugin['name']}"
                 )
