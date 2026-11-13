@@ -23,6 +23,18 @@ Badge Buddy's live criteria comparison is separate, advisory maintenance. Websit
 
 After approval, the workflow creates each lightweight tag, such as `release-buddy--v0.1.0`, at the same checked commit, attaches the evidence, publishes the immutable GitHub Release, and verifies its release attestation and assets. This process uses GitHub's environment approval and release attestation; it does not require a personal SSH signing key, a manually pushed tag, a workflow dispatch, or local finalization. Repository writers are trusted: they can also publish directly, so the environment approval governs this workflow rather than every route to publication. Follow [consumer verification](../VERIFYING.md) from a separate checkout after the first release.
 
+## What authorizes and protects a release
+
+| Control                                     | Responsibility                                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checks at the event commit                  | Tests and dependency scanning evaluate the exact commit that will be tagged, even if `main` advances before approval.                                   |
+| Owner approval in the `release` environment | Authorizes this workflow to publish that checked commit. Repository writers remain trusted to publish directly through GitHub.                          |
+| Immutable GitHub release                    | Locks the published release's associated tag and attached assets while the release exists. It does not validate the code or protect an unpublished tag. |
+
+We intentionally do not maintain separate tag-creation or tag-preservation rulesets. Before publication, ordinary writer permissions allow an unused tag to be corrected or deleted. After immutable publication, GitHub supplies the tag and asset protection. The old owner-only creation rule prevented the workflow token from creating tags and added an unnecessary credential or local handoff to this trusted-writer model. See [repository setup](repo-setup.md#prepare-the-release-repository) for the settings that implement this policy.
+
+Commit signing is independent of release publication. Use your normal Git commit-signing configuration; this repository no longer needs a special SSH signing key. Existing signed tags retain their [historical verification procedure](../VERIFYING.md#historical-ssh-signed-tags).
+
 ## If a run stops
 
 For a transient failure, rerun the original workflow run. Its commit remains the original `github.sha` even if `main` has advanced. A dependency fix belongs in a PR; review the resulting new run before approving publication. To investigate a scan locally, use the OSV-Scanner version pinned in [the scan helper](../tools/scan_dependencies.py) and run `make dependency-scan`; evidence is written to `.cache/dependency-scan/`. Local dependency resolution may differ from Linux CI.
