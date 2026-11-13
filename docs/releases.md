@@ -1,6 +1,6 @@
 # Release a plugin
 
-**Merge a version and its notes, review the checks, then approve publication in GitHub.** Each plugin releases independently; the marketplace has no version. Complete the one-time [repository setup](repo-setup.md#prepare-the-release-repository) first.
+**Merge a version and its notes, review the checks, then approve publication in GitHub.** Each plugin releases independently; the marketplace has no version.
 
 ## 1. Choose the version in a PR
 
@@ -31,9 +31,15 @@ After approval, the workflow creates each lightweight tag, such as `release-budd
 | Owner approval in the `release` environment | Authorizes this workflow to publish that checked commit. Repository writers remain trusted to publish directly through GitHub.                          |
 | Immutable GitHub release                    | Locks the published release's associated tag and attached assets while the release exists. It does not validate the code or protect an unpublished tag. |
 
-We intentionally do not maintain separate tag-creation or tag-preservation rulesets. Before publication, ordinary writer permissions allow an unused tag to be corrected or deleted. After immutable publication, GitHub supplies the tag and asset protection. The old owner-only creation rule prevented the workflow token from creating tags and added an unnecessary credential or local handoff to this trusted-writer model. See [repository setup](repo-setup.md#prepare-the-release-repository) for the settings that implement this policy.
+We intentionally do not maintain separate tag-creation or tag-preservation rulesets. Before publication, ordinary writer permissions allow an unused tag to be corrected or deleted. After immutable publication, GitHub supplies the tag and asset protection. The old owner-only creation rule prevented the workflow token from creating tags and added an unnecessary credential or local handoff to this trusted-writer model.
 
 Commit signing is independent of release publication. Use your normal Git commit-signing configuration; this repository no longer needs a special SSH signing key. Existing signed tags retain their [historical verification procedure](../VERIFYING.md#historical-ssh-signed-tags).
+
+## Configuration to retain
+
+Keep `main` protected and the `release` environment limited to `main`, with owner approval required and administrator bypass disabled. Self-approval is allowed so the owner can approve their own release run. The repository variable `RELEASE_REPOSITORY` must match `reponomics/plugins`; publication uses the workflow's `GITHUB_TOKEN` with job-level `contents: write` permission.
+
+Release immutability must remain enabled in repository or organization settings. The workflow's token cannot read that administration setting; verification after publication detects a missing immutable attestation but cannot undo a mutable release that has already been published.
 
 ## If a run stops
 
@@ -42,5 +48,3 @@ For a transient failure, rerun the original workflow run. Its commit remains the
 A retry verifies the original tag, commit, immutable attestation, and attached evidence of an already published release without rewriting it. Later edits to its displayed title, notes, or prerelease label do not invalidate that retry; the reviewed source notes remain in Git. New publication strictly checks the title, notes, prerelease status, and evidence before publishing.
 
 If a partial draft exists, keep it unpublished and inspect its tag, ownership, files, and digests. Retain its evidence before deliberately removing only that unpublished draft and retrying the original run. Tags without a published immutable release may be corrected or deleted after inspecting the intended commit and retaining relevant evidence; do not overwrite unknown draft assets. Publishing an immutable release locks its associated tag and assets while that release exists. Correct a bad published release with a new version.
-
-Release immutability must remain enabled in repository or organization settings. The workflow's token cannot read that administration setting; verification after publication detects a missing immutable attestation but cannot undo a mutable release that has already been published. See the [setup prerequisite](repo-setup.md#prepare-the-release-repository).
