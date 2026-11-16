@@ -12,7 +12,7 @@ Badge Buddy helps maintainers work through the [OpenSSF Best Practices](https://
 
 ## Get started
 
-The command-line helpers require Python 3.11 or newer, available as `python3` on your PATH. They use only the Python standard library.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) so `uvx` is available to your host, and use Python 3.11 or newer. The plugin registers the published `best-practices-mcp==0.5.0` stdio server for BadgeApp operations. The separate Scorecard helper and local board renderer use Python’s standard library.
 
 Add the marketplace and install the plugin in Claude Code:
 
@@ -30,7 +30,7 @@ Ask for the help you need:
 
 Badge Buddy covers Passing, Silver, Gold, and Security Baseline levels 1–3. You can ask questions, prepare answers, or work on the project as the conversation develops. For a new application, [register your project](https://www.bestpractices.dev/projects/new) on the badge website. Registration is not needed for explanations or implementation help, and you can ask to prepare answers before registering.
 
-The current version primarily supports projects hosted on GitHub. Guidance about the criteria is useful on other forges, but synchronized assessments require a GitHub repository.
+Reload the plugin or restart the host after installation, then check that its `bestpractices` MCP server is connected. The server runs `uvx --from best-practices-mcp==0.5.0 bestpractices-mcp`; it requires no BadgeApp credentials. Other MCP hosts can register that command manually if they do not load plugin MCP configuration. Tool prefixes vary by host. If connection fails, restore the MCP connection before application operations rather than falling back to the retired BadgeApp CLI.
 
 ## Preparing answers
 
@@ -48,13 +48,13 @@ For the Metal badges, a response and its effect on badge progress are distinct:
 
 ## Saving and reviewing progress
 
-Claude saves answers in `.bestpractices.json` in private plugin storage by default. This lets you resume later without adding files to your repository. An existing repository assessment or an established storage preference takes precedence.
+Claude can keep a caller-owned JSON draft and pass it explicitly to the MCP, or use its optional server-managed draft storage. Explicit documents are the normal workflow and need no server storage. Existing repository files and your established storage preference take precedence. Old plugin assessments remain readable JSON; see [migration guidance](skills/ossf-bp-badges/references/application.md#existing-plugin-drafts) before reusing them. No files are moved automatically.
 
 If you keep `.bestpractices.json` in your repository, Claude normally prepares changes in a temporary copy. You review those changes before they are written back, and Claude checks for intervening edits to the repository file. You can ask it to edit that file directly instead. Temporary work is applied or discarded with you at session end. Tracking the file in Git is your choice.
 
 Ask to preview your answers to open a local board. It shows the official criteria, your answers and justifications, and evidence links. Each board covers one badge section. You can read all criteria together or choose a response category such as Unmet. A table of contents helps you move through the list.
 
-The board refreshes as Claude updates your assessment. Reading or navigating it does not change an answer. Discuss revisions in the conversation. During an interactive revision, Claude updates the justification first and keeps the response unchanged while you review the wording. After you approve it, Claude updates the response. Initial drafts can include both together.
+The board is a local plugin feature outside the MCP’s scope. Claude rerenders it after draft changes; the open HTML refreshes automatically to show the regenerated snapshot. Reading or navigating it does not change an answer. Discuss revisions in the conversation. During an interactive revision, Claude updates the justification first and keeps the response unchanged while you review the wording. After you approve it, Claude updates the response. Initial drafts can include both together.
 
 ## Submitting answers
 
@@ -62,9 +62,8 @@ Claude offers the available submission paths and follows your preference:
 
 - **Proposal URLs:** open your proposed answers in the official edit form, with changes highlighted for review. Nothing is saved by opening a link.
 - **A repository `.bestpractices.json`:** commit the exported file so the badge site can read it as automated-tool input. The site fills blanks and flags differences for review without overwriting answers a person has already recorded.
-- **A console fill script:** paste the generated script into your browser's console on the edit page. This is useful for wording-only edits, long answers, or a selected group of fields. The script fills the form without saving it.
 
-You review and save the website form. Claude may help with login or saving only when you explicitly ask it to perform that action. The plugin's controller does not authenticate or write to the badge site. See the [submission guide](skills/ossf-bp-badges/references/application.md#website-transfers) for details.
+You review and save the website form. Claude may help with login or saving only when you explicitly ask it to perform that action. The MCP server does not authenticate or write to the badge site. Console-fill scripts are no longer provided. See the [submission guide](skills/ossf-bp-badges/references/application.md#website-transfers) for details.
 
 ## OpenSSF Scorecard
 
@@ -110,30 +109,20 @@ make check
 make plugin-validate
 ```
 
-The runtime uses only the Python standard library. The root Makefile runs all plugin and maintenance tests, then compiles the Python sources. Plugin validation requires the Claude Code CLI. See the repository [README](../../README.md) for the layout.
+The local board and Scorecard helper use only the Python standard library; BadgeApp operations use the separately installed MCP package. The root Makefile runs all plugin and maintenance tests, then compiles the Python sources. Plugin validation requires the Claude Code CLI. See the repository [README](../../README.md) for the layout.
 
-The badge controller provides these commands:
+The plugin’s [`.mcp.json`](.mcp.json) registers the pinned server. Discovery, criteria, public progress, draft construction/checks and proposal URLs use its tools. Optional `read_draft` and `update_draft` calls use server-managed storage; they are not required for caller-owned documents. See the [application guide](skills/ossf-bp-badges/references/application.md) for the mapping and host responsibilities.
 
-| Command                           | Purpose                                                                                               |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `status`                          | Synchronize and report registration, differences, counts, and answers.                                |
-| `apply --section <section>`       | Validate and record updates for a badge section.                                                      |
-| `review --section <section>`      | Open the section's board; add `--view all` to show all criteria.                                      |
-| `export --output <path>`          | Write the assessment to an explicit path.                                                             |
-| `propose --section <section>`     | Generate official proposal URLs.                                                                      |
-| `fill-script --section <section>` | Generate a script for wording changes; use `--criteria` for a subset or `--all` for the full section. |
-
-For direct controller use, provide the repository and private data paths. When using a repository assessment or a temporary copy, select the existing working file explicitly:
+The standalone board renderer accepts explicit files and never contacts BadgeApp:
 
 ```bash
-venv/bin/python plugins/badge-buddy/scripts/ossf.py \
-  --repo /path/to/project \
-  --data-dir /path/to/private/plugin-data \
-  --assessment-file /tmp/assessment-session.json \
-  review --view all --section passing
+venv/bin/python plugins/badge-buddy/scripts/review_board.py \
+  --input /path/to/draft.json \
+  --output /path/to/board.html \
+  --project-id 16754 --section baseline-1 --view all
 ```
 
-`--assessment-file` must point to an existing flat JSON object. All operations use that file directly. Omit it to use private storage when the repository has no assessment file. Run `status` online once at the start of each Claude Code session to verify the repository/project association and reconcile saved website answers with local answers. Subsequent edits, previews, and transfers use that saved public snapshot without fetching again. Rerun online status if the repository or project ID changes. Run `status` again after saving website changes, or use `status --offline` to inspect local progress. Public synchronization uses GET requests and needs no GitHub credentials; `status --project-id <id>` selects a known badge entry. See the [application guide](skills/ossf-bp-badges/references/application.md#start-or-resume) for storage and synchronization details.
+It reports a local HTML URL; add `--open` to open it directly. It supports all six badge sections. Rerun it after editing the input JSON. The board displays a snapshot using the bundled catalog and does not compare saved and proposed values automatically.
 
 The Scorecard controller supports `fetch --repo owner/repo --output <path>`, `explain --input <path>`, and `diff --before <path> --after <path>`. It preserves published results and compares them without recomputing the upstream score.
 

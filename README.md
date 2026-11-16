@@ -17,7 +17,7 @@ Plugins to help open source projects grow and maintain: quickstart a repo with c
 | **badge-buddy**    | Helps projects of any size achieve meaningful open source badges. An unofficial guide and implementation assistant for the OpenSSF Best Practices badges (Passing, Silver, Gold), the Security Baseline, and Scorecard. Set up useful coverage and analysis badges, improve testing, and maintain secure GitHub workflows. | [plugins/badge-buddy](plugins/badge-buddy/README.md)       |
 | **starter-buddy**  | Quickstart a GitHub repository with key community-files, issue templates, and other sensible defaults, to save you time setting up any project.                                                                                                                                                                            | [plugins/starter-buddy](plugins/starter-buddy/README.md)   |
 | **release-buddy**  | Versioning and changelog guidance, plus signed source tags and immutable GitHub releases with optional build provenance and scoped dependency evidence.                                                                                                                                                                    | [plugins/release-buddy](plugins/release-buddy/README.md)   |
-| **badge-progress** | A mod for Badge Buddy users: a pane with each badge section's answer counts, and a progress bar above the prompt while Claude records answers.                                                                                                                                                                             | [plugins/badge-progress](plugins/badge-progress/README.md) |
+| **badge-progress** | Progress tracking is paused during the MCP migration; its pane explains the transition and points users to Badge Buddy’s retained local preview board.                                                                                                                                                                     | [plugins/badge-progress](plugins/badge-progress/README.md) |
 | **workflow-guard** | A mod that stops Claude from adding unpinned actions or broad top-level token permissions to GitHub Actions workflows.                                                                                                                                                                                                     | [plugins/workflow-guard](plugins/workflow-guard/README.md) |
 
 ## Install
@@ -62,6 +62,7 @@ hidden = [".github", ".gitignore", ".nvmrc", ".pre-commit-config.yaml", ".pretti
 │   │   │   ├── ossf-bp-badges/
 │   │   │   ├── ossf-scorecard/
 │   │   │   └── static-analysis/
+│   │   ├── .mcp.json
 │   │   └── README.md
 │   ├── badge-progress/
 │   ├── release-buddy/
@@ -94,7 +95,7 @@ make plugin-validate  # validate each plugin's structure (needs the Claude Code 
 make mod-test         # run the mods' tests (needs the Claude Code CLI)
 ```
 
-The runtime uses only the Python standard library; the local `venv` holds the development dependencies. `make check` runs the plugin and maintenance suites in separate processes and compiles the Python sources. Continuous integration runs the same target on every push and pull request. See [criteria maintenance](docs/criteria-maintenance.md) for catalog updates and [plugin releases](docs/releases.md) for how to release a plugin: merge its version and reviewed notes, review the checks and OSV report, then approve publication in GitHub. The workflow tags the checked commit and publishes an immutable release. See [Verifying a plugin release](VERIFYING.md) to check its source and attachments; marketplace installation does not automatically pin or verify a release.
+Local Python helpers use the standard library; Badge Buddy’s BadgeApp operations use the separately installed `best-practices-mcp` package. The local `venv` holds development dependencies. `make check` runs the plugin and maintenance suites in separate processes and compiles the Python sources. Continuous integration runs the same target on every push and pull request. See [criteria maintenance](docs/criteria-maintenance.md) for catalog updates and [plugin releases](docs/releases.md) for how to release a plugin: merge its version and reviewed notes, review the checks and OSV report, then approve publication in GitHub. The workflow tags the checked commit and publishes an immutable release. See [Verifying a plugin release](VERIFYING.md) to check its source and attachments; marketplace installation does not automatically pin or verify a release.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues and propose changes.
 

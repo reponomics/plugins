@@ -6,7 +6,7 @@ Use `baseline-1`, `baseline-2`, or `baseline-3`. These sections contain 24, 19, 
 
 Every control is mandatory and permits `N/A` with a written justification when its triggering condition is absent. Recommendations in a control's details remain recommendations.
 
-Use lowercase underscore IDs such as `osps_ac_01_01` in application fields. The public API may return display IDs such as `OSPS-AC-01.01`; the controller handles that mapping during synchronization.
+Use lowercase underscore IDs such as `osps_ac_01_01` in application fields. The public API may return display IDs such as `OSPS-AC-01.01`; the MCP normalizes that mapping for application operations, and the local board accepts both forms.
 
 ## AC — Access Control (organization and repository settings)
 
@@ -106,8 +106,8 @@ Reuse the project's existing security contacts, reporting channels, and policy U
 
 When reusing an existing Metal answer, read the matching row to identify the additional condition Baseline requires. Reuse relevant facts and URLs without assuming the status carries over:
 
-| Related criteria | Additional distinction to resolve |
-| --- | --- |
+| Related criteria                                                   | Additional distinction to resolve                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Passing `vulnerability_report_response` → Baseline `osps_vm_01_01` | Passing requires initial responses within 14 days for reports received in the last six months, and allows `N/A` if there were none. Baseline requires a published CVD policy with a clear response timeframe regardless of report history; it does not prescribe that Passing timeframe. Reuse the reporting information and ask only for the policy commitment if it is missing. |
-| Gold `two_person_review` → Baseline `osps_qa_07_01` | Gold requires another person's review of at least 50% of proposed modifications before release, assessing their suitability and known issues. Baseline requires VCS-enforced non-author human approval before every primary-branch merge. A Gold `Met` answer alone establishes neither Baseline's coverage nor its enforcement. |
-| Passing `test` → Baseline `osps_qa_06_01` | Passing requires a publicly released automated FLOSS test suite and clear instructions or configuration for running it. Baseline requires CI to execute a suite before accepting a commit; its details also recommend contributor-visible results. Reuse the suite description and ask only about missing CI details, preserving that distinction in requirement strength. |
+| Gold `two_person_review` → Baseline `osps_qa_07_01`                | Gold requires another person's review of at least 50% of proposed modifications before release, assessing their suitability and known issues. Baseline requires VCS-enforced non-author human approval before every primary-branch merge. A Gold `Met` answer alone establishes neither Baseline's coverage nor its enforcement.                                                  |
+| Passing `test` → Baseline `osps_qa_06_01`                          | Passing requires a publicly released automated FLOSS test suite and clear instructions or configuration for running it. Baseline requires CI to execute a suite before accepting a commit; its details also recommend contributor-visible results. Reuse the suite description and ask only about missing CI details, preserving that distinction in requirement strength.        |

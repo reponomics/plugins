@@ -29,7 +29,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from ossf_review.storage import normalize_github_remote
+from ossf_review.remotes import normalize_github_remote
 
 
 PUBLIC_API_BASE = "https://api.scorecard.dev/projects"
@@ -79,7 +79,9 @@ def reported_score(value: Any) -> float | None:
     if value == -1:
         return None
     if not 0 <= value <= 10:
-        raise CommandError("reported score must be between 0 and 10, or -1 for inconclusive")
+        raise CommandError(
+            "reported score must be between 0 and 10, or -1 for inconclusive"
+        )
     return float(value)
 
 
@@ -89,7 +91,9 @@ def parse_date(value: str) -> datetime | None:
     try:
         date = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as error:
-        raise CommandError("result date must be an ISO 8601 date or timestamp") from error
+        raise CommandError(
+            "result date must be an ISO 8601 date or timestamp"
+        ) from error
     return date.replace(tzinfo=date.tzinfo or timezone.utc)
 
 
@@ -111,7 +115,9 @@ class CheckResult:
         score = entry.get("score")
         if type(score) is not int or not -1 <= score <= 10:
             raise CommandError(f"{name}: score must be an integer from -1 to 10")
-        documentation = optional_object(entry.get("documentation"), f"{name} documentation")
+        documentation = optional_object(
+            entry.get("documentation"), f"{name} documentation"
+        )
         return cls(
             name=name,
             score=score,
@@ -167,11 +173,15 @@ class Result:
         engine = optional_object(document.get("scorecard"), "result scorecard")
         entries = document.get("checks")
         if not isinstance(entries, list) or not entries:
-            raise CommandError("Scorecard result must contain a non-empty checks array; import Scorecard JSON, not SARIF")
-        checks = tuple(sorted(
-            (CheckResult.parse(entry) for entry in entries),
-            key=lambda check: check.name,
-        ))
+            raise CommandError(
+                "Scorecard result must contain a non-empty checks array; import Scorecard JSON, not SARIF"
+            )
+        checks = tuple(
+            sorted(
+                (CheckResult.parse(entry) for entry in entries),
+                key=lambda check: check.name,
+            )
+        )
         if len({check.name for check in checks}) != len(checks):
             raise CommandError("Scorecard result contains duplicate check names")
         date = optional_text(document.get("date"), "result date")
@@ -180,8 +190,12 @@ class Result:
             repo=name,
             commit=optional_text(repo.get("commit"), "result repo.commit"),
             date=date,
-            scorecard_version=optional_text(engine.get("version"), "result scorecard.version"),
-            scorecard_commit=optional_text(engine.get("commit"), "result scorecard.commit"),
+            scorecard_version=optional_text(
+                engine.get("version"), "result scorecard.version"
+            ),
+            scorecard_commit=optional_text(
+                engine.get("commit"), "result scorecard.commit"
+            ),
             checks=checks,
             reported_score=reported_score(document.get("score")),
             document=document,
@@ -216,15 +230,23 @@ def coverage_notes(result: Result) -> list[str]:
             "acquisition conditions are unknown; use the API to verify a published badge."
         ]
     if result.repo.startswith("file://") or result.provenance.get("mode") == "local":
-        notes.append("Local checkout analysis has limited coverage and is not comparable to a published repository scan.")
+        notes.append(
+            "Local checkout analysis has limited coverage and is not comparable to a published repository scan."
+        )
     if result.provenance.get("checks_requested"):
         notes.append("Only a subset of checks was requested for this imported result.")
     if not result.date or not result.commit:
-        notes.append("The scan date or repository commit is missing; freshness cannot be verified from this result alone.")
+        notes.append(
+            "The scan date or repository commit is missing; freshness cannot be verified from this result alone."
+        )
     if result.reported_score is None:
-        notes.append("Upstream supplied no conclusive aggregate score; none is calculated here.")
+        notes.append(
+            "Upstream supplied no conclusive aggregate score; none is calculated here."
+        )
     if any(check.score < 0 for check in result.checks):
-        notes.append("Inconclusive checks are unscored, not zero. A change in scored coverage can change the reported aggregate.")
+        notes.append(
+            "Inconclusive checks are unscored, not zero. A change in scored coverage can change the reported aggregate."
+        )
     return notes
 
 
@@ -239,14 +261,21 @@ def api_coverage_notes(repo: str) -> list[str]:
             f"guidance is limited to GitHub. For GitLab diagnostics, consult {GITLAB_GUIDANCE}."
         )
     else:
-        notes.append("For GitHub, verify the Action publishing run and its resulting API record.")
+        notes.append(
+            "For GitHub, verify the Action publishing run and its resulting API record."
+        )
     return notes
 
 
 def saved_provenance(value: Any) -> dict[str, Any]:
     metadata = object_field(value, "_ossf_scorecard metadata")
-    if type(metadata.get("schema_version")) is not int or metadata["schema_version"] != 1:
-        raise CommandError("invalid _ossf_scorecard metadata: expected schema_version 1")
+    if (
+        type(metadata.get("schema_version")) is not int
+        or metadata["schema_version"] != 1
+    ):
+        raise CommandError(
+            "invalid _ossf_scorecard metadata: expected schema_version 1"
+        )
     provenance = object_field(metadata.get("provenance"), "_ossf_scorecard provenance")
     if provenance.get("source") not in ("api", "file", "cli"):
         raise CommandError("invalid _ossf_scorecard provenance source")
@@ -260,10 +289,16 @@ def saved_provenance(value: Any) -> dict[str, Any]:
 def read_result_file(path: str) -> Result:
     origin = "<stdin>" if path == "-" else str(Path(path).expanduser())
     try:
-        raw = sys.stdin.read() if path == "-" else Path(origin).read_text(encoding="utf-8")
+        raw = (
+            sys.stdin.read()
+            if path == "-"
+            else Path(origin).read_text(encoding="utf-8")
+        )
         document = json.loads(raw)
     except (OSError, ValueError) as error:
-        raise CommandError(f"could not read Scorecard JSON from {origin}: {error}") from error
+        raise CommandError(
+            f"could not read Scorecard JSON from {origin}: {error}"
+        ) from error
     provenance: dict[str, Any] = {"source": "file", "origin": origin}
     if isinstance(document, Mapping) and "_ossf_scorecard" in document:
         provenance = saved_provenance(document["_ossf_scorecard"])
@@ -281,9 +316,16 @@ def parse_repository_url(repo: str) -> urllib.parse.SplitResult:
     trimmed = repo.strip().rstrip("/")
     if trimmed.count("/") == 1 and ":" not in trimmed:
         trimmed = f"github.com/{trimmed}"
-    parsed = urllib.parse.urlsplit(trimmed if "://" in trimmed else f"https://{trimmed}")
-    if parsed.scheme not in ("http", "https") or parsed.netloc.lower() not in ("github.com", "gitlab.com"):
-        raise CommandError("use owner/repo or a public github.com or gitlab.com repository URL")
+    parsed = urllib.parse.urlsplit(
+        trimmed if "://" in trimmed else f"https://{trimmed}"
+    )
+    if parsed.scheme not in ("http", "https") or parsed.netloc.lower() not in (
+        "github.com",
+        "gitlab.com",
+    ):
+        raise CommandError(
+            "use owner/repo or a public github.com or gitlab.com repository URL"
+        )
     if parsed.query or parsed.fragment or "?" in trimmed or "#" in trimmed:
         raise CommandError("repository URLs must not contain a query or fragment")
     return parsed._replace(
@@ -299,8 +341,13 @@ def repository_path_parts(parsed: urllib.parse.SplitResult) -> list[str]:
     if parsed.netloc.lower() == "gitlab.com" and "-" in parts:
         raise CommandError("use a GitLab repository URL, not a UI route containing /-/")
     parts[-1] = parts[-1].removesuffix(".git")
-    if any(part in (".", "..") or not re.fullmatch(r"[A-Za-z0-9_.-]+", part) for part in parts):
-        raise CommandError("repository path contains an invalid owner, group, or repository name")
+    if any(
+        part in (".", "..") or not re.fullmatch(r"[A-Za-z0-9_.-]+", part)
+        for part in parts
+    ):
+        raise CommandError(
+            "repository path contains an invalid owner, group, or repository name"
+        )
     return parts
 
 
@@ -309,13 +356,15 @@ def missing_publication_message(repo: str) -> str:
     message = f"{parsed.netloc}{parsed.path} has no published Scorecard result at this endpoint. "
     if parsed.hostname == "gitlab.com":
         return (
-            message + "V1 supports reading existing GitLab API results, but implementation "
+            message
+            + "V1 supports reading existing GitLab API results, but implementation "
             "and publication setup guidance is limited to GitHub. You can import upstream "
             f"diagnostic JSON; consult {GITLAB_GUIDANCE} for GitLab scanning guidance. "
             "A diagnostic scan alone does not establish public publication."
         )
     return (
-        message + "Inspect the official Scorecard Action workflow and publish_results setting. "
+        message
+        + "Inspect the official Scorecard Action workflow and publish_results setting. "
         "If publication is authorized, configure it or check the publishing run and allow for ingestion. "
         "A diagnostic scan alone does not publish results."
     )
@@ -324,7 +373,11 @@ def missing_publication_message(repo: str) -> str:
 def fetch_public_api(repo: str, *, opener: Any = urllib.request.urlopen) -> Result:
     normalized = normalize_repo(repo)
     url = f"{PUBLIC_API_BASE}/{normalized}"
-    request = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": USER_AGENT}, method="GET")
+    request = urllib.request.Request(
+        url,
+        headers={"Accept": "application/json", "User-Agent": USER_AGENT},
+        method="GET",
+    )
     try:
         with opener(request, timeout=API_TIMEOUT_SECONDS) as response:
             document = json.loads(response.read().decode("utf-8"))
@@ -332,24 +385,47 @@ def fetch_public_api(repo: str, *, opener: Any = urllib.request.urlopen) -> Resu
         if error.code == 404:
             raise CommandError(missing_publication_message(repo)) from error
         if error.code == 429:
-            raise CommandError("public Scorecard API is rate-limited (429); wait before retrying") from error
-        raise CommandError(f"public Scorecard API returned HTTP {error.code}; this does not establish a missing result") from error
+            raise CommandError(
+                "public Scorecard API is rate-limited (429); wait before retrying"
+            ) from error
+        raise CommandError(
+            f"public Scorecard API returned HTTP {error.code}; this does not establish a missing result"
+        ) from error
     except (urllib.error.URLError, OSError) as error:
-        raise CommandError(f"could not reach the public Scorecard API: {error}") from error
+        raise CommandError(
+            f"could not reach the public Scorecard API: {error}"
+        ) from error
     except ValueError as error:
-        raise CommandError(f"public Scorecard API returned invalid JSON: {error}") from error
-    result = Result.parse(document, provenance={"source": "api", "origin": url, "viewer": f"{VIEWER_BASE}{normalized}"})
+        raise CommandError(
+            f"public Scorecard API returned invalid JSON: {error}"
+        ) from error
+    result = Result.parse(
+        document,
+        provenance={
+            "source": "api",
+            "origin": url,
+            "viewer": f"{VIEWER_BASE}{normalized}",
+        },
+    )
     if normalize_repo(result.repo).casefold() != normalized.casefold():
-        raise CommandError(f"public Scorecard API returned a result for {result.repo}, not {normalized}")
+        raise CommandError(
+            f"public Scorecard API returned a result for {result.repo}, not {normalized}"
+        )
     return result
 
 
 def write_snapshot(result: Result, destination: Path) -> None:
     document = dict(result.document)
-    document["_ossf_scorecard"] = {"schema_version": 1, "provenance": dict(result.provenance)}
+    document["_ossf_scorecard"] = {
+        "schema_version": 1,
+        "provenance": dict(result.provenance),
+    }
     path = destination.expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def engine_comparable(before: Result, after: Result) -> bool:
@@ -375,15 +451,23 @@ def comparison_repo_identity(repo: str) -> str:
 def comparison_barriers(before: Result, after: Result) -> list[str]:
     barriers = []
     if comparison_repo_identity(before.repo) != comparison_repo_identity(after.repo):
-        barriers.append("Repository identity differs; these results cannot verify a change to one project.")
+        barriers.append(
+            "Repository identity differs; these results cannot verify a change to one project."
+        )
     if not engine_comparable(before, after):
-        barriers.append("Scorecard version or engine commit differs or is unknown; scoring behavior may differ.")
+        barriers.append(
+            "Scorecard version or engine commit differs or is unknown; scoring behavior may differ."
+        )
     if before.source != after.source:
-        barriers.append("A published API snapshot and an imported diagnostic have different acquisition sources.")
+        barriers.append(
+            "A published API snapshot and an imported diagnostic have different acquisition sources."
+        )
     barriers.extend(coverage_barriers(before, after))
     before_date, after_date = parse_date(before.date), parse_date(after.date)
     if before_date and after_date and after_date < before_date:
-        barriers.append("The after result is older than the before result; it cannot verify newer publication.")
+        barriers.append(
+            "The after result is older than the before result; it cannot verify newer publication."
+        )
     return barriers
 
 
@@ -392,15 +476,21 @@ def coverage_barriers(before: Result, after: Result) -> list[str]:
     before_names = {check.name for check in before.checks}
     after_names = {check.name for check in after.checks}
     if before_names != after_names:
-        barriers.append("The check set differs; aggregate scores cover different checks.")
+        barriers.append(
+            "The check set differs; aggregate scores cover different checks."
+        )
     before_scored = {check.name for check in before.checks if check.score >= 0}
     after_scored = {check.name for check in after.checks if check.score >= 0}
     if before_scored != after_scored:
-        barriers.append("Scored coverage changed: checks entered or left the inconclusive set.")
+        barriers.append(
+            "Scored coverage changed: checks entered or left the inconclusive set."
+        )
     return barriers
 
 
-def check_change(name: str, old: CheckResult | None, new: CheckResult | None) -> dict[str, Any]:
+def check_change(
+    name: str, old: CheckResult | None, new: CheckResult | None
+) -> dict[str, Any]:
     old_score, new_score = old.value if old else None, new.value if new else None
     return {
         "check": name,
@@ -408,7 +498,9 @@ def check_change(name: str, old: CheckResult | None, new: CheckResult | None) ->
         "after": new_score,
         "before_state": old.state if old else "absent",
         "after_state": new.state if new else "absent",
-        "delta": new_score - old_score if old_score is not None and new_score is not None else None,
+        "delta": new_score - old_score
+        if old_score is not None and new_score is not None
+        else None,
         "reason_after": new.reason if new else "check absent from the later run",
         "details_after": list(new.details) if new else [],
         "documentation_after": dict(new.documentation) if new else {},
@@ -419,13 +511,21 @@ def check_change(name: str, old: CheckResult | None, new: CheckResult | None) ->
 def comparison_notes(before: Result, after: Result, barriers: list[str]) -> list[str]:
     notes = list(barriers)
     if before.source == "import" or after.source == "import":
-        notes.append("Imported credentials and acquisition conditions are unverified; matching structure alone does not prove equivalent scans.")
+        notes.append(
+            "Imported credentials and acquisition conditions are unverified; matching structure alone does not prove equivalent scans."
+        )
     if before.commit == after.commit and before.date == after.date:
-        notes.append("Both results identify the same snapshot; this does not verify a newer publishing run.")
+        notes.append(
+            "Both results identify the same snapshot; this does not verify a newer publishing run."
+        )
     if barriers:
-        notes.append("The aggregate delta is withheld; inspect individual check changes and both reported scores.")
+        notes.append(
+            "The aggregate delta is withheld; inspect individual check changes and both reported scores."
+        )
     else:
-        notes.append("Matching repository, engine and coverage permit a reported-score comparison; they do not prove the edits caused a change.")
+        notes.append(
+            "Matching repository, engine and coverage permit a reported-score comparison; they do not prove the edits caused a change."
+        )
     return notes
 
 
@@ -435,7 +535,11 @@ def compare(before: Result, after: Result) -> dict[str, Any]:
     old = {check.name: check for check in before.checks}
     new = {check.name: check for check in after.checks}
     score_delta = None
-    if not barriers and before.reported_score is not None and after.reported_score is not None:
+    if (
+        not barriers
+        and before.reported_score is not None
+        and after.reported_score is not None
+    ):
         score_delta = round(after.reported_score - before.reported_score, 10)
     return {
         "before": before.summary(),
@@ -452,15 +556,35 @@ def compare(before: Result, after: Result) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Retrieve and inspect upstream OpenSSF Scorecard results.")
+    parser = argparse.ArgumentParser(
+        description="Retrieve and inspect upstream OpenSSF Scorecard results."
+    )
     commands = parser.add_subparsers(dest="command", required=True)
-    fetch = commands.add_parser("fetch", help="read the latest published API result; does not run a scan")
-    fetch.add_argument("--repo", required=True, help="owner/repo or public GitHub/GitLab repository URL")
-    fetch.add_argument("--output", type=Path, help="save the upstream JSON with acquisition metadata for later use")
-    explain = commands.add_parser("explain", help="inspect findings in upstream JSON or a saved API snapshot")
-    explain.add_argument("--input", required=True, help="Scorecard JSON file, or - for standard input")
-    diff = commands.add_parser("diff", help="compare checks and reported scores in two saved results")
-    diff.add_argument("--before", required=True, help="earlier Scorecard JSON file, or -")
+    fetch = commands.add_parser(
+        "fetch", help="read the latest published API result; does not run a scan"
+    )
+    fetch.add_argument(
+        "--repo",
+        required=True,
+        help="owner/repo or public GitHub/GitLab repository URL",
+    )
+    fetch.add_argument(
+        "--output",
+        type=Path,
+        help="save the upstream JSON with acquisition metadata for later use",
+    )
+    explain = commands.add_parser(
+        "explain", help="inspect findings in upstream JSON or a saved API snapshot"
+    )
+    explain.add_argument(
+        "--input", required=True, help="Scorecard JSON file, or - for standard input"
+    )
+    diff = commands.add_parser(
+        "diff", help="compare checks and reported scores in two saved results"
+    )
+    diff.add_argument(
+        "--before", required=True, help="earlier Scorecard JSON file, or -"
+    )
     diff.add_argument("--after", required=True, help="later Scorecard JSON file, or -")
     return parser
 
@@ -476,7 +600,9 @@ def result_payload(result: Result, state: str) -> dict[str, Any]:
 def execute_command(args: argparse.Namespace, *, opener: Any) -> dict[str, Any]:
     if args.command == "diff":
         if args.before == "-" and args.after == "-":
-            raise CommandError("only one of --before and --after may read standard input")
+            raise CommandError(
+                "only one of --before and --after may read standard input"
+            )
         payload = compare(read_result_file(args.before), read_result_file(args.after))
         return {**payload, "state": "diff_computed"}
     if args.command == "explain":
@@ -489,12 +615,18 @@ def execute_command(args: argparse.Namespace, *, opener: Any) -> dict[str, Any]:
     return payload
 
 
-def main(argv: Sequence[str] | None = None, *, opener: Any = urllib.request.urlopen) -> int:
+def main(
+    argv: Sequence[str] | None = None, *, opener: Any = urllib.request.urlopen
+) -> int:
     args = build_parser().parse_args(argv)
     try:
         payload = execute_command(args, opener=opener)
         payload["schema_version"] = 1
-        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False))
+        print(
+            json.dumps(
+                payload, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False
+            )
+        )
         return 0
     except (CommandError, OSError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
