@@ -1,6 +1,6 @@
 # Criteria maintenance
 
-Badge Buddy ships a local criteria catalog with each plugin version. Its guidance and preview aim to match the wording and presentation of the public bestpractices.dev application. Ordinary plugin use reads this catalog without downloading criterion pages; assessment synchronization separately fetches public project answers through the API.
+Badge Buddy ships a local criteria catalog with each plugin version. Its guidance and preview aim to match the wording and presentation of the public bestpractices.dev application. The local preview board reads this catalog without downloading criterion pages. Application work uses the MCP server’s own pinned criteria catalog and public project-read tools; compare any observed wording differences rather than assuming both packaged snapshots are identical.
 
 The catalog is generated from a pinned [BadgeApp](https://github.com/ossf/best-practices-badge) checkout and its English translations. Before accepting an update, maintainer tooling compares it with the public application pages for Passing, Silver, Gold, and Baseline levels 1–3. The comparison covers criterion identifiers, order, descriptions, details, links, and the requirement markings visible on those pages. Submission flags not exposed in the downloaded HTML remain repository-derived.
 

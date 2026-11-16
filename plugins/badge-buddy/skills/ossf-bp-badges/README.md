@@ -8,7 +8,7 @@ A second agent reviews Claude's contribution before Claude presents drafted answ
 
 - [Peer review](references/peer-review.md): how a second agent reviews the drafting agent's work.
 - [Writing justifications](references/justification-style.md): clear wording for the application.
-- [Application guide](references/application.md): working files, synchronization, previews, and website transfers.
+- [Application guide](references/application.md): MCP tools, working documents, local previews, and website transfers.
 - [BadgeApp's worked example](references/badgeapp-example.md): selected answers from a public application.
 - Badge guidance: [Passing](references/passing.md), [Silver](references/silver.md), [Gold](references/gold.md), and [Security Baseline](references/baseline.md).
 
